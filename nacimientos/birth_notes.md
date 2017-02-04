@@ -1,6 +1,6 @@
 # Notes On Natalidad data from INEGI  
 
-[Source](http://www.beta.inegi.org.mx/app/descarga/?p=&ag=00)
+[Source](http://www.beta.inegi.org.mx/proyectos/registros/vitales/natalidad/)
 
 ## Data Description  
 - Every year data is updated with new birth registries  
