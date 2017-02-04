@@ -31,7 +31,7 @@ ggplot(data=births, aes(x=ANO_NAC, fill=as.factor(ANO_NAC))) + geom_bar() +
 
 # 2) How many munis are missing by state(is there state bias?)
 ggplot(data=births, aes(x=(MUN_RESID != "999"))) + geom_bar() + 
-    facet_wrap(~ENT_REGIS, scales="free") 
+    facet_wrap(~ENT_REGIS, scales="free") + labs(x="Has Resid Muni Data")
 
 # 3) map some of the interesting geographic variables
 missdf <- births[, mean(REGIS_DIFFN), by=GEOID]
