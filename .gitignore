@@ -11,3 +11,4 @@
 .Rproj.user
 *.Rproj
 *data/
+*outputs/
