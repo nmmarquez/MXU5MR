@@ -12,3 +12,7 @@
 *.Rproj
 *data/
 *outputs/
+*.so
+*.o
+*.dll
+
