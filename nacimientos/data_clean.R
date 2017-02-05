@@ -1,5 +1,5 @@
 ################################################################################
-# Clean birth data to use for  preliminary exploritory analysis and then 
+# Clean birth data to use for  preliminary exploritory analysis and then
 # analaysis of population estimates to be used in U5MR model
 ################################################################################
 rm(list=ls())
@@ -7,12 +7,12 @@ pacman::p_load(foreign, data.table, ggplot2, INSP, dplyr, plotly)
 
 ### 1) load in the data
 data_home <- "~/Documents/MXU5MR/nacimientos/data/"
-years <- as.character(2007:2015)
+years <- as.character(2006:2015)
 abv_year <- sapply(strsplit(years, ""), function(x) paste0(x[3], x[4]))
 fpaths <- paste0(data_home, "natalidad", years, "/NACIM", abv_year, ".dbf")
-var_names <- c("SEXO", "ANO_REG", "ANO_NAC", "ENT_RESID", "MUN_RESID", 
+var_names <- c("SEXO", "ANO_REG", "ANO_NAC", "ENT_RESID", "MUN_RESID",
                "ENT_REGIS", "MUN_REGIS")
-births <- rbindlist(lapply(fpaths, function(x) 
+births <- rbindlist(lapply(fpaths, function(x)
     subset(read.dbf(x, as.is=TRUE), select=var_names)))
 births <- subset(births, ANO_NAC <= 2015 & ANO_NAC >= 2000)
 
@@ -26,11 +26,11 @@ births[,GEOID:=paste0(ENT_RESID, MUN_RESID)]
 
 ### graph some of teh anomilies in the data
 # 1) for a given year of data what are the years of births
-ggplot(data=births, aes(x=ANO_NAC, fill=as.factor(ANO_NAC))) + geom_bar() + 
+ggplot(data=births, aes(x=ANO_NAC, fill=as.factor(ANO_NAC))) + geom_bar() +
     facet_wrap(~ANO_REG) + theme(legend.position="none")
 
 # 2) How many munis are missing by state(is there state bias?)
-ggplot(data=births, aes(x=(MUN_RESID != "999"))) + geom_bar() + 
+ggplot(data=births, aes(x=(MUN_RESID != "999"))) + geom_bar() +
     facet_wrap(~ENT_REGIS, scales="free") + labs(x="Has Resid Muni Data")
 
 # 3) map some of the interesting geographic variables
@@ -48,9 +48,9 @@ spdf2leaf(mx.sp.df, col="N", label="Birth<br>Count")
 spdf2leaf(mx.sp.df, col="log_birth", label="Log Birth<br>Count")
 
 # 4) Correlation between delay in registering birth and pop count in an area
-gg1 <- ggplot(data=mx.sp.df@data, 
-              aes(x=log_birth, y=REG_DIFFN, label=NOM_MUN)) + 
-    geom_point(alpha=.6, color="maroon4") + 
+gg1 <- ggplot(data=mx.sp.df@data,
+              aes(x=log_birth, y=REG_DIFFN, label=NOM_MUN)) +
+    geom_point(alpha=.6, color="maroon4") +
     stat_smooth(method="glm", method.args=list(family="Gamma"), color="black")
 gg1
 
