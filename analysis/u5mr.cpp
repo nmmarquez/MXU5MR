@@ -53,6 +53,7 @@ Type objective_function<Type>::operator() (){
     PARAMETER_VECTOR(log_sigma);
     PARAMETER_VECTOR(logit_rho);
     PARAMETER(beta);
+    PARAMETER_VECTOR(beta_age);
     printf("%s\n", "Parameters set.");
     
     printf("%s\n", "Transform parameters.");
@@ -84,7 +85,12 @@ Type objective_function<Type>::operator() (){
     for (int l = 0; l < L; l++) {
         for (int a = 0; a < A; a++) {
             for (int t = 0; t < T; t++) {
-                RR(l,a,t) = exp(beta + phi(l,a,t));
+                if (a != 0){
+                    RR(l,a,t) = exp(beta + phi(l,a,t) + beta_age[a-1]);
+                }
+                else{
+                    RR(l,a,t) = exp(beta + phi(l,a,t));
+                }
             }
         }
     }
@@ -105,6 +111,7 @@ Type objective_function<Type>::operator() (){
     REPORT(sigma);
     REPORT(rho);
     REPORT(beta);
+    REPORT(beta_age);
     REPORT(RR);
     REPORT(Q_loc);
     

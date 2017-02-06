@@ -4,7 +4,7 @@
 # will be trated as a missing observation. No covariates will be used initially
 # however support will be added for covariate inclusion.
 ################################################################################
-
+rm(list=ls())
 pacman::p_load(INSP, data.table, dplyr, surveillance, TMB, Matrix)
 
 demog <- fread("~/Documents/MXU5MR/defunciones/outputs/demog.csv")
@@ -20,18 +20,17 @@ DT <- as.data.table(left_join(DT, demog))
 DT[is.na(POPULATION), POPULATION:=0]
 DT[is.na(DEATHS), DEATHS:=0]
 
-DT[,c("age_pop", "age_deaths"):=lapply(list(POPULATION, DEATHS), sum), by=EDAD]
-DT[,ASDR:=age_deaths/age_pop]
-DT[,offset:=ASDR * POPULATION]
+DT[,SDR:=sum(DT$DEATHS) / sum(DT$POPULATION)]
+DT[,offset:=SDR * POPULATION]
 DT
 
 ### Build model structure
 setwd("~/Documents/MXU5MR/analysis/")
 
 model <- "u5mr"
-if (file.exists(paste0(model, ".so"))) file.remove(paste0(model, ".so"))
-if (file.exists(paste0(model, ".o"))) file.remove(paste0(model, ".o"))
-if (file.exists(paste0(model, ".dll"))) file.remove(paste0(model, ".dll"))
+#if (file.exists(paste0(model, ".so"))) file.remove(paste0(model, ".so"))
+#if (file.exists(paste0(model, ".o"))) file.remove(paste0(model, ".o"))
+#if (file.exists(paste0(model, ".dll"))) file.remove(paste0(model, ".dll"))
 compile(paste0(model, ".cpp"))
 
 graph <- poly2adjmat(mx.sp.df)
@@ -41,7 +40,7 @@ Data <- list(yobs=array(DT$DEATHS, dim=dim_len), option=1,
              offset=array(DT$offset, dim=dim_len),
              Wstar=Matrix(diag(rowSums(graph)) - graph, sparse=T))
 Params <- list(phi=array(0, dim=dim_len), log_sigma=c(0, 0, 0),
-               logit_rho=c(0, 0, 0), beta=0)
+               logit_rho=c(0, 0, 0), beta=0, beta_age=rep(0, length(age) - 1))
 
 dyn.load(dynlib(model))
 Obj <- MakeADFun(data=Data, parameters=Params, DLL=model, random="phi",
