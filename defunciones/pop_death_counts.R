@@ -27,8 +27,11 @@ deaths[,DEATHS:=N]
 deaths[,c("ENT_RESID", "MUN_RESID", "N", "ANIO_OCUR", "EDADN"):=NULL]
 deaths
 
-demog <- as.data.table(left_join(pops, deaths2))
+demog <- subset(as.data.table(left_join(pops, deaths)),
+                YEAR <= 2014 & SEXO %in% c(1,2) & MUN_RESID != 999)
 demog[is.na(DEATHS), DEATHS:=0]
+demog[POPULATION<DEATHS,POPULATION:=DEATHS]
+demog
 
 muni_level <- demog[, lapply(list(POPULATION, DEATHS), sum), by=GEOID]
 setnames(muni_level, names(muni_level), c("GEOID","POPULATION", "DEATHS"))
@@ -42,18 +45,36 @@ muni_level[,GEOID:=sprintf("%05d", GEOID)]
 mx.sp.df@data <- left_join(mx.sp.df@data, muni_level)
 #spdf2leaf(mx.sp.df, "POPAVG", "Average<br>Population")
 #spdf2leaf(mx.sp.df, "LOGPOPAVG", "Average<br>Population<br>(Log)")
-#spdf2leaf(mx.sp.df, "DEATHRT", "Death Rate")
+spdf2leaf(mx.sp.df, "DEATHRT", "Death Rate")
 #spdf2leaf(mx.sp.df, "LNMXT", "Death Rate<br>(Log)")
 
-ggplot(data=muni_level, aes(x=POPAVG, y=DEATHS)) +
+ggplot(data=mx.sp.df@data, aes(x=POPAVG, y=DEATHS)) +
     geom_point(alpha=.6, color="maroon4")
 
 head(demog)
 hist(log(demog$DEATHS + 1))
 
-yearly_df <- demog[,lapply(list(POPULATION, DEATHS), sum), by=YEAR]
-setnames(yearly_df, names(yearly_df), c("GEOID","POPULATION", "DEATHS"))
+ya_df <- demog[,lapply(list(POPULATION, DEATHS), sum), by=list(YEAR, EDAD)]
+setnames(ya_df, names(ya_df), c("YEAR", "EDAD", "POPULATION", "DEATHS"))
+ya_df[,RT:=DEATHS/POPULATION]
+ya_df[,RT1000:=RT*10**3]
+ya_df
+
+yearly_df <- demog[,lapply(list(POPULATION, DEATHS), sum), by=list(YEAR)]
+setnames(yearly_df, names(yearly_df), c("YEAR", "POPULATION", "DEATHS"))
 yearly_df[,RT:=DEATHS/POPULATION]
 yearly_df[,RT1000:=RT*10**3]
 yearly_df
-summary(demog$POPULATION)
+
+demog
+demogss <- demog[, lapply(list(POPULATION, DEATHS), sum),
+                 by=list(ENT_RESID, MUN_RESID, GEOID, EDAD, YEAR)]
+setnames(demogss, names(demogss),
+         c("ENT_RESID", "MUN_RESID", "GEOID", "EDAD", "YEAR", "POPULATION", "DEATHS"))
+
+prod(sapply(c("GEOID", "YEAR", "EDAD"), function(x) length(unique(demogss[[x]]))))
+
+unique(demog$GEOID)[!(unique(demog$GEOID) %in% as.integer(mx.sp.df@data$GEOID))]
+
+fwrite(demog, "~/Documents/MXU5MR/defunciones/outputs/sex_spec_demog.csv")
+fwrite(demogss, "~/Documents/MXU5MR/defunciones/outputs/demog.csv")
