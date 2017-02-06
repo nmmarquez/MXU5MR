@@ -16,6 +16,11 @@ var_names <- c("SEXO", "ENT_RESID", "MUN_RESID", "ENT_OCURR", "MUN_OCURR",
 
 deaths <- rbindlist(lapply(fpaths, function(x)
     subset(read.dbf(x, as.is=TRUE), select=var_names)))
+
+deaths[,ENT_OCURR:=sprintf("%02d", as.integer(ENT_OCURR))]
+deaths[,ENT_RESID:=sprintf("%02d", as.integer(ENT_RESID))]
+deaths[,MUN_OCURR:=sprintf("%03d", as.integer(MUN_OCURR))]
+deaths[,MUN_RESID:=sprintf("%03d", as.integer(MUN_RESID))]
 deaths[,GEOID:=paste0(ENT_RESID, MUN_RESID)]
 
 
@@ -42,4 +47,4 @@ mx.sp.df@data <- left_join(mx.sp.df@data, missdf)
 
 spdf2leaf(mx.sp.df, col="REGIS_DIFFN", label="Death Regis <br>Delay (Years)")
 
-fwrite(deaths, file="~/Documents/MXU5MR/defunciones/mddeaths.csv")
+fwrite(deaths, file="~/Documents/MXU5MR/defunciones/outputs/mddeaths.csv")

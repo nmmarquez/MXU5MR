@@ -6,6 +6,7 @@ rm(list=ls())
 pacman::p_load(data.table, ggplot2, INSP, dplyr)
 
 births <- fread("~/Documents/MXU5MR/nacimientos/outputs/mdbirths.csv")
+#births <- subset(births, REGIS_DIFFN <= 1)
 
 birth_counts <- births[,.N,by=list(ANO_NAC, SEXO, ENT_RESID, MUN_RESID, GEOID)]
 
