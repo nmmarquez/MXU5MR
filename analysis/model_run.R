@@ -48,9 +48,12 @@ Obj <- MakeADFun(data=Data, parameters=Params, DLL=model, random="phi",
 #Obj$env$tracemgc <- FALSE
 #Obj$env$inner.control$trace <- FALSE
 system.time(Opt <- nlminb(start=Obj$par, objective=Obj$fn, gradient=Obj$gr))
+# user   system  elapsed 
+# 1128.412   10.468 1140.782 
 Opt$convergence
 Report <- Obj$report()
 Report$beta
+Report$beta_age
 Report$sigma
 Report$rho
 
