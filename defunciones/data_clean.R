@@ -30,7 +30,7 @@ deaths[,GEOID:=paste0(ENT_RESID, MUN_RESID)]
 deaths[,EDADN:=EDAD-4000]
 deaths[EDAD<4000, EDADN:=0]
 deaths[,REGIS_DIFFN:=ANIO_REGIS - ANIO_OCUR]
-deaths <- subset(deaths, ANIO_OCUR <= 2015 & ANIO_OCUR >= 2000)
+deaths <- subset(deaths, ANIO_OCUR <= 2015 & ANIO_OCUR >= 2004)
 deaths <- subset(deaths,  EDADN < 5)
 hist(deaths$EDADN)
 hist(deaths$ANIO_OCUR)
@@ -44,6 +44,13 @@ missdf <- deaths[, mean(REGIS_DIFFN), by=GEOID]
 setnames(missdf, names(missdf), c("GEOID","REGIS_DIFFN"))
 
 mx.sp.df@data <- left_join(mx.sp.df@data, missdf)
+
+timedf <- deaths[,.N,by=ANIO_OCUR]
+
+gg1 <- ggplot(data=subset(timedf, ANIO_OCUR >= 2005), aes(x=ANIO_OCUR, y=N)) + 
+    geom_line()
+
+ggplotly(gg1)
 
 spdf2leaf(mx.sp.df, col="REGIS_DIFFN", label="Death Regis <br>Delay (Years)")
 

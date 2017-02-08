@@ -52,7 +52,7 @@ gg1 <- ggplot(data=mx.sp.df@data,
               aes(x=log_birth, y=REG_DIFFN, label=NOM_MUN)) +
     geom_point(alpha=.6, color="maroon4") +
     stat_smooth(method="glm", method.args=list(family="Gamma"), color="black")
-gg1
+ggplotly(gg1)
 
 
 # save data
