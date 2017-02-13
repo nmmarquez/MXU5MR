@@ -45,6 +45,7 @@ Type objective_function<Type>::operator() (){
     
     DATA_ARRAY(yobs);
     DATA_ARRAY(offset);
+    DATA_ARRAY(lik);
     DATA_SPARSE_MATRIX(Wstar); // pre compiled wstar matrix
     DATA_INTEGER(option);
     printf("%s\n", "Data loaded");
@@ -66,7 +67,9 @@ Type objective_function<Type>::operator() (){
     int T = yobs.dim(2);        // number of years
     
     // Initiate log likelihood
-    Type nll = 0.;
+    vector<Type> nll(2);
+    nll[0] = Type(0);
+    nll[1] = Type(0);
     
     // Probability of random effects
     printf("%s\n", "Build precision matrix.");
@@ -76,7 +79,7 @@ Type objective_function<Type>::operator() (){
     
     printf("%s\n", "Eval RE likelihood.");
     if(option > 0){
-        nll += SEPARABLE(GMRF(Q_time), SEPARABLE(GMRF(Q_age), GMRF(Q_loc)))(phi);
+        nll[0] += SEPARABLE(GMRF(Q_time), SEPARABLE(GMRF(Q_age), GMRF(Q_loc)))(phi);
     }
     
     printf("%s\n", "Make estimates.");
@@ -100,8 +103,11 @@ Type objective_function<Type>::operator() (){
     for (int l = 0; l < L; l++) {
         for (int a = 0; a < A; a++) {
             for (int t = 0; t < T; t++) {
-                if (offset(l,a,t) != Type(0.)){
-                    nll -= dpois(yobs(l,a,t), RR(l,a,t) * offset(l,a,t), true);
+                if (offset(l,a,t) != Type(0.) & lik(l,a,t) != Type(0.)){
+                    nll[0] -= dpois(yobs(l,a,t), RR(l,a,t) * offset(l,a,t), true);
+                }
+                if (offset(l,a,t) != Type(0.) & lik(l,a,t) == Type(0.)){
+                    nll[1] -= dpois(yobs(l,a,t), RR(l,a,t) * offset(l,a,t), true);
                 }
             }
         }
@@ -111,9 +117,10 @@ Type objective_function<Type>::operator() (){
     REPORT(sigma);
     REPORT(rho);
     REPORT(beta);
-    REPORT(beta_age);
     REPORT(RR);
+    REPORT(phi);
     REPORT(Q_loc);
+    REPORT(nll);
     
-    return nll;
+    return nll[0];
 }
