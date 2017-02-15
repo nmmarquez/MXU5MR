@@ -1,7 +1,9 @@
-pacman::p_load(Hmisc)
+rm(list=ls())
+pacman::p_load(Hmisc, data.table)
 
-test <- as.factor(c("red", "blue"))
-as.character(test)
+vars <- c("fech.nach", "fech.cert", "ent.res",  "mpo.res", "atendio", "sexoh")
+files <- list.files("~/Documents/MXU5MR/nacimientos/data/dgis/", pattern=".mdb",
+                    full.names=TRUE)
 
-test <- mdb.get("~/Documents/MXU5MR/nacimientos/data/dgis/SINAC0836_SDP.mdb")
-# 
+
+data <- rbindlist(lapply(files, function(x) mdb.get(x, "NACIMIENTO", T)[,vars]))
