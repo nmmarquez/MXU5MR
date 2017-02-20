@@ -34,16 +34,22 @@ deaths[,DEATHS:=N]
 deaths[,c("ENT_RESID", "MUN_RESID", "N", "ANIO_OCUR", "EDADN"):=NULL]
 deaths
 
-demog <- subset(as.data.table(left_join(pops, deaths)),
+demog <- subset(as.data.table(merge(pops, deaths, all=TRUE, 
+                                    by=c("SEXO", "GEOID", "YEAR", "EDAD"))),
                 YEAR <= 2015 & SEXO %in% c(1,2) & MUN_RESID != 999)
-demog
-demog <- as.data.table(left_join(demog, popsdgis))
+demog <- as.data.table(merge(demog, popsdgis, all=TRUE, 
+                             by=c("SEXO", "ENT_RESID", "MUN_RESID", "GEOID", 
+                                  "EDAD", "YEAR")))
+demog <- subset(demog, SEXO %in% c(1,2) & MUN_RESID != 999 & ENT_RESID <= 32)
+summary(demog)
     
-demog
+
 demog[is.na(DEATHS), DEATHS:=0]
+demog[is.na(POPULATION), POPULATION:=0]
+demog[is.na(POPULATION2), POPULATION2:=0]
 demog[POPULATION<DEATHS,POPULATION:=DEATHS]
 demog[POPULATION2<DEATHS,POPULATION2:=DEATHS]
-demog
+summary(demog)
 
 muni_level <- demog[, lapply(list(POPULATION, DEATHS), sum), by=GEOID]
 setnames(muni_level, names(muni_level), c("GEOID","POPULATION", "DEATHS"))
@@ -67,15 +73,17 @@ head(demog)
 hist(log(demog$DEATHS + 1))
 
 ya_df <- demog[,lapply(list(POPULATION, DEATHS, POPULATION2), sum), by=list(YEAR, EDAD)]
-setnames(ya_df, names(ya_df), c("YEAR", "EDAD", "POPULATION", "DEATHS"))
+setnames(ya_df, names(ya_df), c("YEAR", "EDAD", "POPULATION", "DEATHS", "POPULATION2"))
 ya_df[,RT:=DEATHS/POPULATION]
 ya_df[,RT1000:=RT*10**3]
 ya_df
 
-yearly_df <- demog[,lapply(list(POPULATION, DEATHS), sum), by=list(YEAR)]
-setnames(yearly_df, names(yearly_df), c("YEAR", "POPULATION", "DEATHS"))
+yearly_df <- demog[,lapply(list(POPULATION, DEATHS, POPULATION2), sum), by=list(YEAR)]
+setnames(yearly_df, names(yearly_df), c("YEAR", "POPULATION", "DEATHS", "POPULATION2"))
 yearly_df[,RT:=DEATHS/POPULATION]
 yearly_df[,RT1000:=RT*10**3]
+yearly_df[,RT2:=DEATHS/POPULATION2]
+yearly_df[,RT21000:=RT2*10**3]
 yearly_df
 
 demog

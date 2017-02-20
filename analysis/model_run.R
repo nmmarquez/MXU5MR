@@ -18,14 +18,11 @@ year <- sort(unique(demog$YEAR))
 DT <- as.data.table(expand.grid(GEOID=geoid, EDAD=age, YEAR=year))
 DT <- as.data.table(left_join(DT, demog))
 DT[is.na(POPULATION), POPULATION:=0]
+DT[is.na(POPULATION2), POPULATION2:=0]
 DT[is.na(DEATHS), DEATHS:=0]
 summary(DT$DEATHS > DT$POPULATION)
+summary(DT$DEATHS > DT$POPULATION2)
 
-# DTA <- DT[,lapply(list(DEATHS, POPULATION), sum), by=list(EDAD)]
-# DTA[,ASDR:=V1 / V2]
-# DTA
-# 
-# DT[,SDR:=sum(DT$DEATHS) / sum(DT$POPULATION)]
 DT[,offset:=POPULATION]
 DT
 
