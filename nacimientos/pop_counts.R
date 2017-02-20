@@ -6,7 +6,7 @@ rm(list=ls())
 pacman::p_load(data.table, ggplot2, INSP, dplyr)
 
 births <- fread("~/Documents/MXU5MR/nacimientos/outputs/mdbirths.csv")
-births <- subset(births, REGIS_DIFFN <= 0)
+births <- subset(births, REGIS_DIFFN <= 1)
 
 birth_counts <- births[,.N,by=list(ANO_NAC, SEXO, ENT_RESID, MUN_RESID, GEOID)]
 
@@ -30,7 +30,7 @@ rm("year_pops")
 birthsdgis <- fread("~/Documents/MXU5MR/nacimientos/outputs/mdbirthsdgis.csv")
 setnames(birthsdgis, c("ent.res", "mpo.res", "sexoh", "ano", "ano.regis"),
          c("ENT_RESID", "MUN_RESID", "SEXO", "ANO_NAC", "ANO_REGIS"))
-birthsdgis <- subset(birthsdgis, (ANO_REGIS - ANO_NAC) <= 0)
+birthsdgis <- subset(birthsdgis, (ANO_REGIS - ANO_NAC) <= 1)
 
 birth_counts_dgis <- birthsdgis[,.N,by=list(ANO_NAC, SEXO, ENT_RESID, MUN_RESID, GEOID)]
 birth_counts_dgis

@@ -22,3 +22,5 @@ mvloc <- gsub(extr_dir, save_dir, datafiles)
 
 file.rename(datafiles, mvloc)
 
+sapply(tempfiles, unlink)
+unlink(extr_dir)
