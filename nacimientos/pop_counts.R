@@ -21,6 +21,22 @@ pop_count <- function(year, df=birth_counts){
     return(subdf)
 }
 
-year_pops <- rbindlist(lapply(2011:2015, pop_count))
+year_pops <- rbindlist(lapply(2012:2015, pop_count))
 
 fwrite(year_pops, file="~/Documents/MXU5MR/nacimientos/outputs/deathlesspopcounts.csv")
+
+rm("year_pops")
+
+birthsdgis <- fread("~/Documents/MXU5MR/nacimientos/outputs/mdbirthsdgis.csv")
+setnames(birthsdgis, c("ent.res", "mpo.res", "sexoh", "ano", "ano.regis"),
+         c("ENT_RESID", "MUN_RESID", "SEXO", "ANO_NAC", "ANO_REGIS"))
+birthsdgis <- subset(birthsdgis, (ANO_REGIS - ANO_NAC) <= 0)
+
+birth_counts_dgis <- birthsdgis[,.N,by=list(ANO_NAC, SEXO, ENT_RESID, MUN_RESID, GEOID)]
+birth_counts_dgis
+
+year_pops_dgis <- rbindlist(lapply(2012:2015, pop_count, df=birth_counts_dgis))
+year_pops_dgis
+
+fwrite(year_pops_dgis, 
+       file="~/Documents/MXU5MR/nacimientos/outputs/deathlesspopcountsdgis.csv")

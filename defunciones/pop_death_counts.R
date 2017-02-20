@@ -21,6 +21,13 @@ pops[is.na(DEATHS), DEATHS:=0]
 pops[,POPULATION:=N - DEATHS]
 pops[,DEATHS:=NULL]
 
+popsdgis <- fread("~/Documents/MXU5MR/nacimientos/outputs/deathlesspopcountsdgis.csv")
+popsdgis <- as.data.table(left_join(popsdgis, deaths2))
+popsdgis[is.na(DEATHS), DEATHS:=0]
+popsdgis[,POPULATION2:=N - DEATHS]
+popsdgis[,DEATHS:=NULL]
+popsdgis[,N:=NULL]
+
 deaths[,YEAR:=ANIO_OCUR]
 deaths[,EDAD:=EDADN]
 deaths[,DEATHS:=N]
@@ -29,8 +36,13 @@ deaths
 
 demog <- subset(as.data.table(left_join(pops, deaths)),
                 YEAR <= 2014 & SEXO %in% c(1,2) & MUN_RESID != 999)
+demog
+demog <- as.data.table(left_join(demog, popsdgis))
+    
+demog
 demog[is.na(DEATHS), DEATHS:=0]
 demog[POPULATION<DEATHS,POPULATION:=DEATHS]
+demog[POPULATION2<DEATHS,POPULATION2:=DEATHS]
 demog
 
 muni_level <- demog[, lapply(list(POPULATION, DEATHS), sum), by=GEOID]
