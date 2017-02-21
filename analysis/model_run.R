@@ -5,7 +5,7 @@
 # however support will be added for covariate inclusion.
 ################################################################################
 rm(list=ls())
-pacman::p_load(INSP, data.table, dplyr, surveillance, TMB, Matrix)
+pacman::p_load(INSP, data.table, dplyr, surveillance, TMB, Matrix, INLA, rgeos)
 
 demog <- fread("~/Documents/MXU5MR/defunciones/outputs/demog.csv")
 demog[,GEOID:=sprintf("%05d", GEOID)]
@@ -24,32 +24,45 @@ summary(DT$DEATHS > DT$POPULATION)
 summary(DT$DEATHS > DT$POPULATION2)
 
 DT[,offset:=POPULATION]
-DT
+
+### build spde
+mesh <- gCentroid(mx.sp.df, byid=T) %>% inla.mesh.create
+spde <- inla.spde2.matern(mesh)
+N_l <- nrow(mx.sp.df@data)
+all(mesh$idx$loc[1:(N_l -1)] + 1 == mesh$idx$loc[2:N_l])
 
 ### Build model structure
 setwd("~/Documents/MXU5MR/analysis/")
 
 model <- "u5mr"
-if (file.exists(paste0(model, ".so"))) file.remove(paste0(model, ".so"))
-if (file.exists(paste0(model, ".o"))) file.remove(paste0(model, ".o"))
-if (file.exists(paste0(model, ".dll"))) file.remove(paste0(model, ".dll"))
+# if (file.exists(paste0(model, ".so"))) file.remove(paste0(model, ".so"))
+# if (file.exists(paste0(model, ".o"))) file.remove(paste0(model, ".o"))
+# if (file.exists(paste0(model, ".dll"))) file.remove(paste0(model, ".dll"))
 compile(paste0(model, ".cpp"))
 
-model_run <- function(pinsamp=1,rectime=T, verbose=F){
+model_run <- function(pinsamp=1,rectime=T, verbose=F, option=1, seed=123){
     graph <- poly2adjmat(mx.sp.df)
+    N_l <- ifelse(option == 1, length(geoid), nrow(spde$param.inla$M1))
     dim_len <- c(length(geoid), length(age), length(year))
-    Data <- list(yobs=array(DT$DEATHS, dim=dim_len), option=1, 
+    dim_len_phi <- c(N_l, length(age), length(year))
+    set.seed(seed)
+    Data <- list(yobs=array(DT$DEATHS, dim=dim_len), option=option, 
                  offset=array(DT$offset, dim=dim_len),
                  Wstar=Matrix(diag(rowSums(graph)) - graph, sparse=T),
-                 lik=array(rbinom(nrow(DT), 1, pinsamp), dim=dim_len))
-    Params <- list(phi=array(0, dim=dim_len), log_sigma=c(0, 0, 0),
-                   logit_rho=c(0, 0, 0), beta=0, beta_age=rep(0, length(age)-1))
+                 lik=array(rbinom(nrow(DT), 1, pinsamp), dim=dim_len),
+                 G0=spde$param.inla$M0, G1=spde$param.inla$M1, 
+                 G2=spde$param.inla$M2)
+    Params <- list(phi=array(0, dim=dim_len_phi), log_sigma=c(0, 0),
+                   logit_rho=c(0, 0), beta=0, beta_age=rep(0, length(age)-1),
+                   spparams=c(0, 0))
     dyn.load(dynlib(model))
     Obj <- MakeADFun(data=Data, parameters=Params, DLL=model, random="phi",
                      silent=!verbose)
     Obj$env$tracemgc <- verbose
     Obj$env$inner.control$trace <- verbose
-    system.time(Opt <- nlminb(start=Obj$par, objective=Obj$fn, gradient=Obj$gr))
+    print(system.time(Opt <- nlminb(start=Obj$par, objective=Obj$fn, 
+                                    gradient=Obj$gr,
+                                    control=list(eval.max=1e4, iter.max=1e4))))
     # user   system  elapsed 
     # 1128.412   10.468 1140.782 
     Report <- Obj$report()
@@ -57,12 +70,20 @@ model_run <- function(pinsamp=1,rectime=T, verbose=F){
     Report
 }
 
-ospv <- model_run(pinsamp=.8)$nll
-print(ospv)
-Report <- model_run(pinsamp=1.)
+# ospv <- list(m1=model_run(pinsamp=.8)$nll, 
+#              m2=model_run(pinsamp=.8, option=2, verbose=TRUE)$nll)
+# 
+# save(ospv, file="~/Documents/MXU5MR/analysis/outputs/ospv_pop1.Rdata")
 
-DT[,RR:=c(Report$phi)]
-DT[,Rate:=c(Report$RR)]
-DT[,B0:=ReportOS$beta]
+DT[,Ratem1pop1:=c(model_run(pinsamp=1., option=1)$RR)]
+#DT[,Ratem2pop1:=c(model_run(pinsamp=1., option=2)$RR)]
+
+DT[,offset:=POPULATION2]
+# ospv <- list(m1=model_run(pinsamp=.8)$nll, 
+#              m2=model_run(pinsamp=.8, option=2)$nll)
+# save(ospv, file="~/Documents/MXU5MR/analysis/outputs/ospv_pop2.Rdata")
+
+DT[,Ratem1pop2:=c(model_run(pinsamp=1., option=1)$RR)]
+#DT[,Ratem2pop2:=c(model_run(pinsamp=1., option=2)$RR)]
 
 fwrite(DT, "~/Documents/MXU5MR/analysis/outputs/model_phi.csv")
