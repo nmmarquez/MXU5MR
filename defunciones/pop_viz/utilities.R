@@ -22,7 +22,7 @@ popleaf <- function(ano, datos, espacio, vitales){
         df@data$data <- df$POPULATION2
     }
     else{
-        df@data$data <- df$POPULATION2 - df$POPULATION
+        df@data$data <- (df$POPULATION2 - df$POPULATION) / df$POPULATION2
     }
     if(vitales != "Nacimientos"){
         df@data$data <- df@data$DEATHS / df@data$data * 100000
