@@ -28,4 +28,4 @@ u5[,m1p1:=DEATHS_m1p1/(POPULATION - .5 * DEATHS_m1p1) * 1000]
 u5[,m1p2:=DEATHS_m1p2/(POPULATION2 - .5 * DEATHS_m1p2) * 1000]
 u5
 
-subset(ya_df, YEAR == 2014)$m1p2
+(1 - prod(1 - (subset(ya_df, YEAR == 2015)$m1p2 / 1000))) * 1000
