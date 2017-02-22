@@ -32,11 +32,17 @@ deaths[EDAD<4000, EDADN:=0]
 deaths[,REGIS_DIFFN:=ANIO_REGIS - ANIO_OCUR]
 deaths <- subset(deaths, ANIO_OCUR <= 2015 & ANIO_OCUR >= 2004)
 deaths <- subset(deaths,  EDADN < 5)
+
+# create edad2
+deaths[,EDADN2:=EDADN + 1]
+deaths[EDAD < 3000, EDADN2:=0]
+
+# plot diagnostics of death data
 hist(deaths$EDADN)
+hist(deaths$EDADN2)
 hist(deaths$ANIO_OCUR)
 str(deaths)
 
-# plot diagnostics of death data
 ggplot(data=deaths, aes(x=REGIS_DIFFN)) + geom_bar() +
     facet_wrap(~ANIO_REGIS) + theme(legend.position="none")
 

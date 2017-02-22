@@ -14,19 +14,33 @@ deaths2[,YEAR:=ANIO_OCUR + 1]
 deaths2[,EDAD:=EDADN+1]
 deaths2[,DEATHS:=N]
 deaths2[,c("ENT_RESID", "MUN_RESID", "N", "ANIO_OCUR", "EDADN"):=NULL]
+deaths2[,COHORT:= YEAR - EDAD]
+deaths2
 
 pops <- fread("~/Documents/MXU5MR/nacimientos/outputs/deathlesspopcounts.csv")
-pops <- as.data.table(left_join(pops, deaths2))
-pops[is.na(DEATHS), DEATHS:=0]
-pops[,POPULATION:=N - DEATHS]
-pops[,DEATHS:=NULL]
-
+pops[,COHORT:= YEAR - EDAD]
 popsdgis <- fread("~/Documents/MXU5MR/nacimientos/outputs/deathlesspopcountsdgis.csv")
-popsdgis <- as.data.table(left_join(popsdgis, deaths2))
-popsdgis[is.na(DEATHS), DEATHS:=0]
-popsdgis[,POPULATION2:=N - DEATHS]
-popsdgis[,DEATHS:=NULL]
-popsdgis[,N:=NULL]
+popsdgis[,COHORT:= YEAR - EDAD]
+
+for(i in 1:4){
+    subdeath <- subset(deaths2, EDAD == i)
+    subdeath[,c("YEAR", "EDAD"):=NULL]
+    pops <- as.data.table(left_join(pops, subdeath))
+    pops[is.na(DEATHS), DEATHS:=0]
+    pops[EDAD < i, DEATHS:=0]
+    pops[,N:=N - DEATHS]
+    pops[,DEATHS:=NULL]
+    popsdgis <- as.data.table(left_join(popsdgis, subdeath))
+    popsdgis[is.na(DEATHS), DEATHS:=0]
+    popsdgis[EDAD < i, DEATHS:=0]
+    popsdgis[,N:=N - DEATHS]
+    popsdgis[,DEATHS:=NULL]
+}
+
+pops[,POPULATION:=N]
+popsdgis[,POPULATION2:=N]
+pops[,c("N", "COHORT"):=NULL]
+popsdgis[,c("N", "COHORT"):=NULL]
 
 deaths[,YEAR:=ANIO_OCUR]
 deaths[,EDAD:=EDADN]
@@ -42,7 +56,9 @@ demog <- as.data.table(merge(demog, popsdgis, all=TRUE,
                                   "EDAD", "YEAR")))
 demog <- subset(demog, SEXO %in% c(1,2) & MUN_RESID != 999 & ENT_RESID <= 32)
 summary(demog)
-    
+
+demog[,COHORT:=YEAR - EDAD]
+subset(demog, COHORT == 2012 & GEOID == 1001)    
 
 demog[is.na(DEATHS), DEATHS:=0]
 demog[is.na(POPULATION), POPULATION:=0]
@@ -76,7 +92,7 @@ ya_df <- demog[,lapply(list(POPULATION, DEATHS, POPULATION2), sum), by=list(YEAR
 setnames(ya_df, names(ya_df), c("YEAR", "EDAD", "POPULATION", "DEATHS", "POPULATION2"))
 ya_df[,RT:=DEATHS/POPULATION]
 ya_df[,RT1000:=RT*10**3]
-ya_df
+subset(ya_df, EDAD == 1)
 
 yearly_df <- demog[,lapply(list(POPULATION, DEATHS, POPULATION2), sum), by=list(YEAR)]
 setnames(yearly_df, names(yearly_df), c("YEAR", "POPULATION", "DEATHS", "POPULATION2"))
