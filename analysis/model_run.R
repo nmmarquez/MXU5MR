@@ -18,12 +18,11 @@ year <- sort(unique(demog$YEAR))
 DT <- as.data.table(expand.grid(GEOID=geoid, EDAD=age, YEAR=year))
 DT <- as.data.table(left_join(DT, demog))
 DT[is.na(POPULATION), POPULATION:=0]
+DT[YEAR == 2015, POPULATION:=0]
 DT[is.na(POPULATION2), POPULATION2:=0]
 DT[is.na(DEATHS), DEATHS:=0]
 summary(DT$DEATHS > DT$POPULATION)
 summary(DT$DEATHS > DT$POPULATION2)
-
-DT[,offset:=POPULATION]
 
 ### build spde
 mesh <- gCentroid(mx.sp.df, byid=T) %>% inla.mesh.create
@@ -35,19 +34,20 @@ all(mesh$idx$loc[1:(N_l -1)] + 1 == mesh$idx$loc[2:N_l])
 setwd("~/Documents/MXU5MR/analysis/")
 
 model <- "u5mr"
-# if (file.exists(paste0(model, ".so"))) file.remove(paste0(model, ".so"))
-# if (file.exists(paste0(model, ".o"))) file.remove(paste0(model, ".o"))
-# if (file.exists(paste0(model, ".dll"))) file.remove(paste0(model, ".dll"))
+#if (file.exists(paste0(model, ".so"))) file.remove(paste0(model, ".so"))
+#if (file.exists(paste0(model, ".o"))) file.remove(paste0(model, ".o"))
+#if (file.exists(paste0(model, ".dll"))) file.remove(paste0(model, ".dll"))
 compile(paste0(model, ".cpp"))
 
-model_run <- function(pinsamp=1,rectime=T, verbose=F, option=1, seed=123){
+model_run <- function(pinsamp=1, verbose=FALSE, option=1, seed=123, pop=1:2){
     graph <- poly2adjmat(mx.sp.df)
     N_l <- ifelse(option == 1, length(geoid), nrow(spde$param.inla$M1))
     dim_len <- c(length(geoid), length(age), length(year))
     dim_len_phi <- c(N_l, length(age), length(year))
     set.seed(seed)
     Data <- list(yobs=array(DT$DEATHS, dim=dim_len), option=option, 
-                 offset=array(DT$offset, dim=dim_len),
+                 offset=array(c(DT$POPULATION, DT$POPULATION2), 
+                              dim=c(dim_len, 2))[,,,pop,drop=FALSE],
                  Wstar=Matrix(diag(rowSums(graph)) - graph, sparse=T),
                  lik=array(rbinom(nrow(DT), 1, pinsamp), dim=dim_len),
                  G0=spde$param.inla$M0, G1=spde$param.inla$M1, 
@@ -75,15 +75,10 @@ model_run <- function(pinsamp=1,rectime=T, verbose=F, option=1, seed=123){
 # 
 # save(ospv, file="~/Documents/MXU5MR/analysis/outputs/ospv_pop1.Rdata")
 
-DT[,Ratem1pop1:=c(model_run(pinsamp=1., option=1)$RR)]
-#DT[,Ratem2pop1:=c(model_run(pinsamp=1., option=2)$RR)]
+DT[,Ratem1pop1:=c(model_run(pinsamp=1., option=1, pop=1)$RR)]
+DT[,Ratem1pop2:=c(model_run(pinsamp=1., option=1, pop=2)$RR)]
+DT[,Ratem1:=c(model_run(pinsamp=1., option=1, pop=1:2)$RR)]
 
-DT[,offset:=POPULATION2]
-# ospv <- list(m1=model_run(pinsamp=.8)$nll, 
-#              m2=model_run(pinsamp=.8, option=2)$nll)
-# save(ospv, file="~/Documents/MXU5MR/analysis/outputs/ospv_pop2.Rdata")
 
-DT[,Ratem1pop2:=c(model_run(pinsamp=1., option=1)$RR)]
-#DT[,Ratem2pop2:=c(model_run(pinsamp=1., option=2)$RR)]
 
 fwrite(DT, "~/Documents/MXU5MR/analysis/outputs/model_phi.csv")

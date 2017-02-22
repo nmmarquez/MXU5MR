@@ -72,6 +72,7 @@ Type objective_function<Type>::operator() (){
     int L = yobs.dim(0);        // number of locations
     int A = yobs.dim(1);        // number of ages
     int T = yobs.dim(2);        // number of years
+    int O = offset.dim(3);      // number of pop obs
     
     // Initiate log likelihood
     vector<Type> nll(2);
@@ -130,11 +131,15 @@ Type objective_function<Type>::operator() (){
     for (int l = 0; l < L; l++) {
         for (int a = 0; a < A; a++) {
             for (int t = 0; t < T; t++) {
-                if (offset(l,a,t) != Type(0.) & lik(l,a,t) != Type(0.)){
-                    PARALLEL_REGION nll[0] -= dpois(yobs(l,a,t), RR(l,a,t) * offset(l,a,t), true);
-                }
-                if (offset(l,a,t) != Type(0.) & lik(l,a,t) == Type(0.)){
-                    PARALLEL_REGION nll[1] -= dpois(yobs(l,a,t), RR(l,a,t) * offset(l,a,t), true);
+                for (int o = 0; o < O; o++) {
+                    if (offset(l,a,t,o) != Type(0.) & lik(l,a,t) != Type(0.)){
+                        PARALLEL_REGION nll[0] -= dpois(yobs(l,a,t), RR(l,a,t) *
+                            offset(l,a,t,o), true);
+                    }
+                    if (offset(l,a,t,o) != Type(0.) & lik(l,a,t) == Type(0.)){
+                        PARALLEL_REGION nll[1] -= dpois(yobs(l,a,t), RR(l,a,t) * 
+                            offset(l,a,t,o), true);
+                    }
                 }
             }
         }
@@ -146,7 +151,6 @@ Type objective_function<Type>::operator() (){
     REPORT(beta);
     REPORT(RR);
     REPORT(phi);
-    REPORT(Q_loc);
     REPORT(nll);
     REPORT(spsigma);
     REPORT(Range);
