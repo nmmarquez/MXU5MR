@@ -26,6 +26,8 @@ summary(DT$DEATHS > DT$POPULATION2)
 
 ### build spde
 mesh <- gCentroid(mx.sp.df, byid=T) %>% inla.mesh.create
+plot(mx.sp.df)
+plot(mesh)
 spde <- inla.spde2.matern(mesh)
 N_l <- nrow(mx.sp.df@data)
 all(mesh$idx$loc[1:(N_l -1)] + 1 == mesh$idx$loc[2:N_l])

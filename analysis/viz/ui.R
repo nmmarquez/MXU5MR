@@ -9,7 +9,7 @@ source("./utilities.R")
 
 years <- sort(unique(DF$YEAR))
 ages <- sort(unique(DF$EDAD))
-space <- c("taza", "log")
+space <- c("tasa", "log", "percentaje")
 
 
 header <- dashboardHeader(
@@ -20,7 +20,8 @@ body <- dashboardBody(
     fluidRow(
         column(width=12,
                tabBox(id='tabvals', width=NULL,
-                      tabPanel('Map', leafletOutput('mapplot'), value=1)
+                      tabPanel('Map', leafletOutput('mapplot'), value=1),
+                      tabPanel('Histogram', plotOutput('histplot'), value=2)
                )
         ) 
     ),
