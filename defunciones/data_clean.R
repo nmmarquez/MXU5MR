@@ -27,40 +27,39 @@ deaths[,GEOID:=paste0(ENT_RESID, MUN_RESID)]
 # clean age data which begins with 40 when the age is over 1 and another number
 # other wise. because we only care about the age at death in single year age
 # groups the cleaning is pretty minimal
-deaths[,EDADN:=EDAD-4000]
-deaths[EDAD<4000, EDADN:=0]
 deaths[,REGIS_DIFFN:=ANIO_REGIS - ANIO_OCUR]
+deaths[,EDADN1:=EDAD-4000]
+deaths[EDAD<4000, EDADN1:=0]
 deaths <- subset(deaths, ANIO_OCUR <= 2015 & ANIO_OCUR >= 2004)
-deaths <- subset(deaths,  EDADN < 5)
+deaths <- subset(deaths,  EDADN1 < 5)
 deaths[EDAD<3000,EDADN2:=0]
 deaths[EDAD>=3000 & EDAD <4000, EDADN2:=1]
-deaths[EDAD>=4000, EDADN2:=EDADN+1]
+deaths[EDAD>=4000, EDADN2:=EDADN1+1]
 deaths[EDAD<3000,EDADN3:=0]
 deaths[EDAD>=3000 & EDAD <=3011, EDADN3:=EDAD-2999]
 deaths[EDAD>=4000, EDADN3:=EDAD-4000 + 12]
+deaths <- melt(deaths, setdiff(names(deaths), paste0("EDADN", 1:3)), 
+               variable.name = "EDADV", value.name = "EDADN")
+deaths[,EDADV:=sapply(strsplit(as.character(deaths$EDADV), "N"), function(x) 
+    as.integer(x[[2]]))]
 
-ggplot(deaths, aes(x=EDADN)) + geom_histogram()
-ggplot(deaths, aes(x=EDADN2)) + geom_histogram()
-
-# create edad2
-deaths[,EDADN2:=EDADN + 1]
-deaths[EDAD < 3000, EDADN2:=0]
+ggplot(subset(deaths, EDADV==1), aes(x=EDADN)) + geom_histogram()
+ggplot(subset(deaths, EDADV==2), aes(x=EDADN)) + geom_histogram()
+ggplot(subset(deaths, EDADV==3), aes(x=EDADN)) + geom_histogram()
 
 # plot diagnostics of death data
-hist(deaths$EDADN)
-hist(deaths$EDADN2)
 hist(deaths$ANIO_OCUR)
 str(deaths)
 
-ggplot(data=deaths, aes(x=REGIS_DIFFN)) + geom_bar() +
+ggplot(data=subset(deaths, EDADV==1), aes(x=REGIS_DIFFN)) + geom_bar() +
     facet_wrap(~ANIO_REGIS) + theme(legend.position="none")
 
-missdf <- deaths[, mean(REGIS_DIFFN), by=GEOID]
+missdf <- subset(deaths, EDADV==1)[, mean(REGIS_DIFFN), by=GEOID]
 setnames(missdf, names(missdf), c("GEOID","REGIS_DIFFN"))
 
 mx.sp.df@data <- left_join(mx.sp.df@data, missdf)
 
-timedf <- deaths[,.N,by=ANIO_OCUR]
+timedf <- subset(deaths, EDADV==1)[,.N,by=ANIO_OCUR]
 
 gg1 <- ggplot(data=subset(timedf, ANIO_OCUR >= 2005), aes(x=ANIO_OCUR, y=N)) + 
     geom_line()
