@@ -32,6 +32,15 @@ deaths[EDAD<4000, EDADN:=0]
 deaths[,REGIS_DIFFN:=ANIO_REGIS - ANIO_OCUR]
 deaths <- subset(deaths, ANIO_OCUR <= 2015 & ANIO_OCUR >= 2004)
 deaths <- subset(deaths,  EDADN < 5)
+deaths[EDAD<3000,EDADN2:=0]
+deaths[EDAD>=3000 & EDAD <4000, EDADN2:=1]
+deaths[EDAD>=4000, EDADN2:=EDADN+1]
+deaths[EDAD<3000,EDADN3:=0]
+deaths[EDAD>=3000 & EDAD <=3011, EDADN3:=EDAD-2999]
+deaths[EDAD>=4000, EDADN3:=EDAD-4000 + 12]
+
+ggplot(deaths, aes(x=EDADN)) + geom_histogram()
+ggplot(deaths, aes(x=EDADN2)) + geom_histogram()
 
 # create edad2
 deaths[,EDADN2:=EDADN + 1]
