@@ -9,6 +9,7 @@ pacman::p_load(INSP, data.table, dplyr, surveillance, TMB, Matrix, INLA, rgeos)
 
 demog <- fread("~/Documents/MXU5MR/defunciones/outputs/demog.csv")
 demog[,GEOID:=sprintf("%05d", GEOID)]
+agedf <- fread("~/Documents/MXU5MR/nacimientos/outputs/age_groups.csv")
 
 geoid <- as.character(mx.sp.df@data$GEOID)
 age <- sort(unique(demog$EDAD))
@@ -36,24 +37,26 @@ all(mesh$idx$loc[1:(N_l -1)] + 1 == mesh$idx$loc[2:N_l])
 setwd("~/Documents/MXU5MR/analysis/")
 
 model <- "u5mr"
-#if (file.exists(paste0(model, ".so"))) file.remove(paste0(model, ".so"))
-#if (file.exists(paste0(model, ".o"))) file.remove(paste0(model, ".o"))
-#if (file.exists(paste0(model, ".dll"))) file.remove(paste0(model, ".dll"))
+if (file.exists(paste0(model, ".so"))) file.remove(paste0(model, ".so"))
+if (file.exists(paste0(model, ".o"))) file.remove(paste0(model, ".o"))
+if (file.exists(paste0(model, ".dll"))) file.remove(paste0(model, ".dll"))
 compile(paste0(model, ".cpp"))
 
-model_run <- function(pinsamp=1, verbose=FALSE, option=1, seed=123, pop=1:2){
+model_run <- function(pinsamp=1, verbose=FALSE, option=1, seed=123, pop=1:2,
+                      ffoption=0, ageversion=1){
     graph <- poly2adjmat(mx.sp.df)
     N_l <- ifelse(option == 1, length(geoid), nrow(spde$param.inla$M1))
     dim_len <- c(length(geoid), length(age), length(year))
     dim_len_phi <- c(N_l, length(age), length(year))
     set.seed(seed)
-    Data <- list(yobs=array(DT$DEATHS, dim=dim_len), option=option, 
+    Data <- list(yobs=array(DT$DEATHS, dim=dim_len), option=option,
                  offset=array(c(DT$POPULATION, DT$POPULATION2), 
                               dim=c(dim_len, 2))[,,,pop,drop=FALSE],
                  Wstar=Matrix(diag(rowSums(graph)) - graph, sparse=T),
                  lik=array(rbinom(nrow(DT), 1, pinsamp), dim=dim_len),
                  G0=spde$param.inla$M0, G1=spde$param.inla$M1, 
-                 G2=spde$param.inla$M2)
+                 G2=spde$param.inla$M2, ffoption=ffoption, 
+                 agep=subset(agedf, EDADV == ageversion)$MP)
     Params <- list(phi=array(0, dim=dim_len_phi), log_sigma=c(0, 0),
                    logit_rho=c(0, 0), beta=0, beta_age=rep(0, length(age)-1),
                    spparams=c(0, 0))

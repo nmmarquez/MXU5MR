@@ -47,7 +47,9 @@ Type objective_function<Type>::operator() (){
     DATA_ARRAY(offset);
     DATA_ARRAY(lik);
     DATA_SPARSE_MATRIX(Wstar); // pre compiled wstar matrix
+    DATA_VECTOR(agep);
     DATA_INTEGER(option);
+    DATA_INTEGER(ffoption);
     
     // SPDE objects
     DATA_SPARSE_MATRIX(G0);
@@ -117,11 +119,16 @@ Type objective_function<Type>::operator() (){
     for (int l = 0; l < L; l++) {
         for (int a = 0; a < A; a++) {
             for (int t = 0; t < T; t++) {
-                if (a != 0){
-                    RR(l,a,t) = exp(beta + phi(l,a,t) + beta_age[a-1]);
+                if (ffoption == 0){
+                    if (a != 0){
+                        RR(l,a,t) = exp(beta + phi(l,a,t) + beta_age[a-1]);
+                    }
+                    else{
+                        RR(l,a,t) = exp(beta + phi(l,a,t));
+                    }
                 }
                 else{
-                    RR(l,a,t) = exp(beta + phi(l,a,t));
+                    RR(l,a,t) = exp(beta + beta_age[0] * agep[a] + phi(l,a,t));
                 }
             }
         }
