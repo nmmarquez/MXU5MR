@@ -78,7 +78,8 @@ Type objective_function<Type>::operator() (){
     vector<Type> nll(2);
     nll[0] = Type(0);
     nll[1] = Type(0);
-    max_parallel_regions = omp_get_max_threads(); 
+    max_parallel_regions = omp_get_max_threads();
+    printf("This is thread %d\n", max_parallel_regions);
     
     // Probability of random effects
     printf("%s\n", "Build precision matrix.");

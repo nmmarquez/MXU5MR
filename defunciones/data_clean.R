@@ -36,12 +36,14 @@ deaths[EDAD<3000,EDADN2:=0]
 deaths[EDAD>=3000 & EDAD <4000, EDADN2:=1]
 deaths[EDAD>=4000, EDADN2:=EDADN1+1]
 deaths[EDAD<3000,EDADN3:=0]
-deaths[EDAD>=3000 & EDAD <=3011, EDADN3:=EDAD-2999]
-deaths[EDAD>=4000, EDADN3:=EDAD-4000 + 12]
+deaths[EDAD>=3000 & EDAD <=3011, EDADN3:=EDAD-3000]
+deaths[EDAD>=4000, EDADN3:=EDAD-4000 + 11]
 deaths <- melt(deaths, setdiff(names(deaths), paste0("EDADN", 1:3)), 
                variable.name = "EDADV", value.name = "EDADN")
 deaths[,EDADV:=sapply(strsplit(as.character(deaths$EDADV), "N"), function(x) 
     as.integer(x[[2]]))]
+
+for(i in 1:3) {print(table(subset(deaths, EDADV == i)$EDADN))}
 
 ggplot(subset(deaths, EDADV==1), aes(x=EDADN)) + geom_histogram()
 ggplot(subset(deaths, EDADV==2), aes(x=EDADN)) + geom_histogram()
