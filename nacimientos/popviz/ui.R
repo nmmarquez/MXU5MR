@@ -19,7 +19,8 @@ body <- dashboardBody(
     fluidRow(
         column(width=12,
                tabBox(id='tabvals', width=NULL,
-                      tabPanel('Map', leafletOutput('mapplot'), value=1)
+                      tabPanel('Map', leafletOutput('mapplot'), value=1),
+                      tabPanel('Hist', plotOutput('histplot'), value=2)
                )
         ) 
     ),

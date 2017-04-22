@@ -114,5 +114,26 @@ prod(sapply(c("GEOID", "YEAR", "EDADN"), function(x) length(unique(demog[[x]])))
 
 unique(demog$GEOID)[!(unique(demog$GEOID) %in% as.integer(mx.sp.df@data$GEOID))]
 
+demog <- as.data.table(demog)
+demog[,GEOID:=sprintf("%05d", GEOID)]
+demog[,EDAD:=EDADN]
+geoid <- as.character(mx.sp.df@data$GEOID)
+age <- sort(unique(demog$EDAD))
+year <- sort(unique(demog$YEAR))
+agev <- sort(unique(demog$EDADV))
 
-fwrite(demog, "~/Documents/MXU5MR/defunciones/outputs/demog.csv")
+DT <- as.data.table(expand.grid(GEOID=geoid, EDAD=age, YEAR=year, EDADV=agev))
+DT <- subset(DT, (EDADV == 1 & EDAD <= 4) | (EDADV == 2 & EDAD <= 5) | (EDADV == 3))
+DT <- as.data.table(left_join(DT, demog))
+DT[is.na(POPULATION), POPULATION:=0]
+DT[is.na(POPULATION2), POPULATION2:=0]
+DT[is.na(DEATHS), DEATHS:=0]
+summary(DT$EDADN != DT$EDAD)
+summary(DT$DEATHS > DT$POPULATION)
+summary(DT$DEATHS > DT$POPULATION2)
+sum(is.na(DT$EDADN)) - (nrow(DT) - nrow(demog))
+unique(demog$GEOID)[(!(unique(demog$GEOID) %in% unique(DT$GEOID)))]
+length(unique(DT$GEOID))
+length(unique(demog$GEOID))
+
+fwrite(DT, "~/Documents/MXU5MR/defunciones/outputs/demog.csv")

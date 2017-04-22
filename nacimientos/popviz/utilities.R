@@ -1,30 +1,36 @@
 rm(list=ls())
 pacman::p_load(INSP, data.table, dplyr, surveillance, TMB, Matrix, INLA, rgeos)
 
-demog <- subset(fread("~/Documents/MXU5MR/defunciones/outputs/demog.csv"), 
+DT <- subset(fread("~/Documents/MXU5MR/defunciones/outputs/demog.csv"), 
                 EDADN==0 & EDADV==1)
-demog[,GEOID:=sprintf("%05d", GEOID)]
-demog
-
-geoid <- as.character(mx.sp.df@data$GEOID)
-year <- sort(unique(demog$YEAR))
-
-DT <- as.data.table(expand.grid(GEOID=geoid, YEAR=year))
-DT <- as.data.table(left_join(DT, demog))
-DT[is.na(POPULATION), POPULATION:=0]
-DT[is.na(POPULATION2), POPULATION2:=0]
-DT[is.na(DEATHS), DEATHS:=0]
-summary(DT$DEATHS > DT$POPULATION)
-summary(DT$DEATHS > DT$POPULATION2)
-
+DT[,GEOID:=sprintf("%05d", GEOID)]
 DT[,POPRATIO:=POPULATION / POPULATION2]
+
+histplot <-function(year, space, variable){
+    model_sub <- subset(DT, YEAR==year)
+    model_sub$data <- model_sub[[variable]]
+    if(space == "log"){
+        model_sub$data <- log(model_sub$data)
+    }
+    
+    if (variable == "POPRATIO"){
+        return(ggplot(data=model_sub, aes(data)) + 
+                   geom_histogram() + labs(title=variable) + 
+                   geom_vline(xintercept=1.))
+    }
+    else{
+        return(ggplot(data=model_sub, aes(data)) + 
+                   geom_histogram() + labs(title=variable))
+    }
+}
+
 
 popleaf <- function(year, space, variable){
     DFsub <- subset(DT, YEAR == year)
     df <- mx.sp.df
     df@data <- as.data.table(left_join(df@data, DFsub))
     df@data$data <- df@data[[variable]]
-    lab_label <- ""
+    lab_label <- variable
     if(space == "Log"){
         df@data$data <- log(abs(df@data$data))
     }
