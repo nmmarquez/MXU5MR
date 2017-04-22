@@ -7,8 +7,9 @@
 rm(list=ls())
 pacman::p_load(INSP, data.table, dplyr, surveillance, TMB, Matrix, INLA, rgeos)
 
-demog <- fread("~/Documents/MXU5MR/defunciones/outputs/demog.csv")
+demog <- subset(fread("~/Documents/MXU5MR/defunciones/outputs/demog.csv"), EDADV==1)
 demog[,GEOID:=sprintf("%05d", GEOID)]
+demog[,EDAD:=EDADN]
 agedf <- fread("~/Documents/MXU5MR/nacimientos/outputs/age_groups.csv")
 
 geoid <- as.character(mx.sp.df@data$GEOID)
@@ -86,4 +87,4 @@ DT[,Ratem1:=c(model_run(pinsamp=1., option=1, pop=1:2)$RR)]
 
 
 
-fwrite(DT, "~/Documents/MXU5MR/analysis/outputs/model_phi.csv")
+fwrite(DT, "~/Documents/MXU5MR/analysis/outputs/model_phi2.csv")
