@@ -74,7 +74,7 @@ demog[POPULATION<DEATHS,POPULATION:=DEATHS]
 demog[POPULATION2<DEATHS,POPULATION2:=DEATHS]
 summary(demog)
 
-subset(demog, COHORT == 2012 & GEOID == 1001 & EDADV == 1)
+subset(demog, COHORT == 2011 & GEOID == 1001 & EDADV == 1)
 
 muni_level <- subset(demog, EDADV == 1)[, lapply(list(POPULATION, DEATHS), sum), by=GEOID]
 setnames(muni_level, names(muni_level), c("GEOID","POPULATION", "DEATHS"))
@@ -89,7 +89,7 @@ mx.sp.df@data <- left_join(mx.sp.df@data, muni_level)
 #spdf2leaf(mx.sp.df, "POPAVG", "Average<br>Population")
 #spdf2leaf(mx.sp.df, "LOGPOPAVG", "Average<br>Population<br>(Log)")
 #spdf2leaf(mx.sp.df, "DEATHRT", "Death Rate")
-spdf2leaf(mx.sp.df, "LNMXT", "Death Rate<br>(Log)")
+#spdf2leaf(mx.sp.df, "LNMXT", "Death Rate<br>(Log)")
 
 ggplot(data=mx.sp.df@data, aes(x=POPAVG, y=DEATHS)) +
     geom_point(alpha=.6, color="maroon4")

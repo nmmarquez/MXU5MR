@@ -7,45 +7,32 @@
 rm(list=ls())
 pacman::p_load(INSP, data.table, dplyr, surveillance, TMB, Matrix, INLA, rgeos)
 
-demog <- subset(fread("~/Documents/MXU5MR/defunciones/outputs/demog.csv"), EDADV==1)
-demog[,GEOID:=sprintf("%05d", GEOID)]
-demog[,EDAD:=EDADN]
+DT <- subset(fread("~/Documents/MXU5MR/defunciones/outputs/demog.csv"), EDADV==1)
+DT[,GEOID:=sprintf("%05d", GEOID)]
+DT[,EDAD:=EDADN]
 agedf <- fread("~/Documents/MXU5MR/nacimientos/outputs/age_groups.csv")
 
-geoid <- as.character(mx.sp.df@data$GEOID)
-age <- sort(unique(demog$EDAD))
-year <- sort(unique(demog$YEAR))
-
 # create data table with all combinations of geoid, age, and year
-DT <- as.data.table(expand.grid(GEOID=geoid, EDAD=age, YEAR=year))
-DT <- as.data.table(left_join(DT, demog))
-DT[is.na(POPULATION), POPULATION:=0]
-DT[YEAR == 2015, POPULATION:=0]
-DT[is.na(POPULATION2), POPULATION2:=0]
-DT[is.na(DEATHS), DEATHS:=0]
 summary(DT$DEATHS > DT$POPULATION)
 summary(DT$DEATHS > DT$POPULATION2)
+DT[YEAR == 2015, POPULATION:=0]
+DT[YEAR == 2011, POPULATION2:=0]
 
 ### build spde
-mesh <- gCentroid(mx.sp.df, byid=T) %>% inla.mesh.create
-plot(mx.sp.df)
-plot(mesh)
-spde <- inla.spde2.matern(mesh)
-N_l <- nrow(mx.sp.df@data)
-all(mesh$idx$loc[1:(N_l -1)] + 1 == mesh$idx$loc[2:N_l])
 
 ### Build model structure
-setwd("~/Documents/MXU5MR/analysis/")
 
-model <- "u5mr"
-if (file.exists(paste0(model, ".so"))) file.remove(paste0(model, ".so"))
-if (file.exists(paste0(model, ".o"))) file.remove(paste0(model, ".o"))
-if (file.exists(paste0(model, ".dll"))) file.remove(paste0(model, ".dll"))
-compile(paste0(model, ".cpp"))
 
-model_run <- function(pinsamp=1, verbose=FALSE, option=1, seed=123, pop=1:2,
+model_run <- function(DT, pinsamp=1, verbose=FALSE, option=1, seed=123, pop=1:2,
                       ffoption=0, ageversion=1){
+    setwd("~/Documents/MXU5MR/analysis/")
+    model <- "u5mr"
+    mesh <- gCentroid(mx.sp.df, byid=T) %>% inla.mesh.create
+    spde <- inla.spde2.matern(mesh)
     graph <- poly2adjmat(mx.sp.df)
+    geoid <- unique(DT$GEOID)
+    year <- unique(DT$YEAR)
+    age <- unique(DT$EDAD)
     N_l <- ifelse(option == 1, length(geoid), nrow(spde$param.inla$M1))
     dim_len <- c(length(geoid), length(age), length(year))
     dim_len_phi <- c(N_l, length(age), length(year))
@@ -69,10 +56,9 @@ model_run <- function(pinsamp=1, verbose=FALSE, option=1, seed=123, pop=1:2,
     print(system.time(Opt <- nlminb(start=Obj$par, objective=Obj$fn, 
                                     gradient=Obj$gr,
                                     control=list(eval.max=1e4, iter.max=1e4))))
-    # user   system  elapsed 
-    # 1128.412   10.468 1140.782 
     Report <- Obj$report()
     Report$convergence <- Opt$convergence
+    dyn.unload(dynlib(model))
     Report
 }
 
@@ -81,9 +67,9 @@ model_run <- function(pinsamp=1, verbose=FALSE, option=1, seed=123, pop=1:2,
 # 
 # save(ospv, file="~/Documents/MXU5MR/analysis/outputs/ospv_pop1.Rdata")
 
-DT[,Ratem1pop1:=c(model_run(pinsamp=1., option=1, pop=1)$RR)]
-DT[,Ratem1pop2:=c(model_run(pinsamp=1., option=1, pop=2)$RR)]
-DT[,Ratem1:=c(model_run(pinsamp=1., option=1, pop=1:2)$RR)]
+DT[,Ratem1pop1:=c(model_run(DT, pinsamp=1., option=1, pop=1)$RR)]
+DT[,Ratem1pop2:=c(model_run(DT, pinsamp=1., option=1, pop=2)$RR)]
+DT[,Ratem1:=c(model_run(DT, pinsamp=1., option=1, pop=1:2)$RR)]
 
 
 
