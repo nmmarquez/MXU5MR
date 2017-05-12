@@ -140,6 +140,7 @@ DT <- as.data.table(left_join(DT, demog))
 DT[is.na(POPULATION), POPULATION:=0]
 DT[is.na(POPULATION2), POPULATION2:=0]
 DT[is.na(DEATHS), DEATHS:=0]
+DT[is.na(EDADN), EDADN:=EDAD]
 summary(DT$EDADN != DT$EDAD)
 summary(DT$DEATHS > DT$POPULATION)
 summary(DT$DEATHS > DT$POPULATION2)
@@ -147,5 +148,6 @@ sum(is.na(DT$EDADN)) - (nrow(DT) - nrow(demog))
 unique(demog$GEOID)[(!(unique(demog$GEOID) %in% unique(DT$GEOID)))]
 length(unique(DT$GEOID))
 length(unique(demog$GEOID))
+nrow(mx.sp.df@data)
 
 fwrite(DT, "~/Documents/MXU5MR/defunciones/outputs/demog.csv")
