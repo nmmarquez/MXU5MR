@@ -21,15 +21,14 @@ DT[YEAR == 2011, POPULATION2:=0]
 ### build spde
 
 ### Build model structure
-
+mesh <- gCentroid(mx.sp.df, byid=T) %>% inla.mesh.create
+spde <- inla.spde2.matern(mesh)
+graph <- poly2adjmat(mx.sp.df)
 
 model_run <- function(DT, pinsamp=1, verbose=FALSE, option=1, seed=123, pop=1:2,
                       ffoption=0, ageversion=1){
     setwd("~/Documents/MXU5MR/analysis/")
     model <- "u5mr"
-    mesh <- gCentroid(mx.sp.df, byid=T) %>% inla.mesh.create
-    spde <- inla.spde2.matern(mesh)
-    graph <- poly2adjmat(mx.sp.df)
     geoid <- unique(DT$GEOID)
     year <- unique(DT$YEAR)
     age <- unique(DT$EDAD)
@@ -58,6 +57,9 @@ model_run <- function(DT, pinsamp=1, verbose=FALSE, option=1, seed=123, pop=1:2,
                                     control=list(eval.max=1e4, iter.max=1e4))))
     Report <- Obj$report()
     Report$convergence <- Opt$convergence
+    sdrep <- sdreport(Obj, getJointPrecision = T)
+    Report$par.vals <- c(sdrep$par.fixed, sdrep$par.random)
+    Report$prec <- sdrep$jointPrecision
     dyn.unload(dynlib(model))
     Report
 }
@@ -67,10 +69,13 @@ model_run <- function(DT, pinsamp=1, verbose=FALSE, option=1, seed=123, pop=1:2,
 # 
 # save(ospv, file="~/Documents/MXU5MR/analysis/outputs/ospv_pop1.Rdata")
 
-DT[,Ratem1pop1:=c(model_run(DT, pinsamp=1., option=1, pop=1)$RR)]
-DT[,Ratem1pop2:=c(model_run(DT, pinsamp=1., option=1, pop=2)$RR)]
-DT[,Ratem1:=c(model_run(DT, pinsamp=1., option=1, pop=1:2)$RR)]
+mods <- list(Ratem1pop1=model_run(DT, pinsamp=1., option=1, pop=1),
+             Ratem1pop2=model_run(DT, pinsamp=1., option=1, pop=2),
+             Ratem1=model_run(DT, pinsamp=1., option=1, pop=1:2))
+DT[,Ratem1pop1:=c(mods$Ratem1pop1$RR)]
+DT[,Ratem1pop2:=c(mods$Ratem1pop2$RR)]
+DT[,Ratem1:=c(c(mods$Ratem1$RR))]
 
 
-
-fwrite(DT, "~/Documents/MXU5MR/analysis/outputs/model_phi2.csv")
+save(mods, file="~/Documents/MXU5MR/analysis/outputs/model_covs.Rdata")
+fwrite(DT, "~/Documents/MXU5MR/analysis/outputs/model_phi3.csv")

@@ -14,7 +14,7 @@ agedf <- fread("~/Documents/MXU5MR/nacimientos/outputs/age_groups.csv")
 
 pops <- fread("~/Documents/MXU5MR/nacimientos/outputs/mdbirths.csv")
 pops[,YEAR := ANO_NAC]
-#pops <- subset(pops, REGIS_DIFFN <= 1)
+pops <- subset(pops, REGIS_DIFFN <= 1)
 popsdgis <- fread("~/Documents/MXU5MR/nacimientos/outputs/mdbirthsdgis.csv")
 popsdgis[,YEAR := ano]
 popsdgis[,REGIS_DIFFN:=0]
@@ -43,17 +43,17 @@ calc_cohort_pop <- function(popdf, deathdf, cohort, age_ver, intv=c(2011,2015)){
         demsubdf2[,DEATHS:=NA]
         demsubdf2[,YEAR:=year_curr]
         demsubdf2[,EDADN:=age+1]
-        psubnew <- subset(popdf, YEAR == cohort & REGIS_DIFFN > ageset$MP[i] &
-                              REGIS_DIFFN < ageset$MP[i+1], select=c(GEOID, YEAR))
-        psubaggnew <- psubnew[,.N, by=list(GEOID, YEAR)]
-        setnames(psubaggnew, "N", "POPULATION2")
-        psubaggnew[,EDADN:=age+1]
-        psubaggnew[,YEAR:=year_curr]
-        demsubdf2 <- full_join(demsubdf2, psubaggnew)
-        demsubdf2[is.na(POPULATION), POPULATION:=0]
-        demsubdf2[is.na(POPULATION2), POPULATION2:=0]
-        demsubdf2[,POPULATION:= POPULATION + POPULATION2]
-        demsubdf2[,POPULATION2:=NULL]
+        # psubnew <- subset(popdf, YEAR == cohort & REGIS_DIFFN > ageset$MP[i] &
+        #                       REGIS_DIFFN < ageset$MP[i+1], select=c(GEOID, YEAR))
+        # psubaggnew <- psubnew[,.N, by=list(GEOID, YEAR)]
+        # setnames(psubaggnew, "N", "POPULATION2")
+        # psubaggnew[,EDADN:=age+1]
+        # psubaggnew[,YEAR:=year_curr]
+        # demsubdf2 <- full_join(demsubdf2, psubaggnew)
+        # demsubdf2[is.na(POPULATION), POPULATION:=0]
+        # demsubdf2[is.na(POPULATION2), POPULATION2:=0]
+        # demsubdf2[,POPULATION:= POPULATION + POPULATION2]
+        # demsubdf2[,POPULATION2:=NULL]
         demdf <- rbind(demsubdf, demsubdf2)
         psubagg <- subset(psubagg, EDADN != age)
         psubagg <- rbind(psubagg, demdf)

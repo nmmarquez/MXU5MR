@@ -14,7 +14,7 @@ spdf <- mx.sp.df
 
 geoid <- as.character(spdf@data$GEOID)
 age <- 0:4
-year <- 2009:2014
+year <- 2011:2014
 
 length(geoid) * length(age) * length(year)
 
