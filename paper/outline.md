@@ -34,8 +34,4 @@ Outline
 
 ##Introduction
 
-In 2015 at the end of the tracking period of the Millennium goals the report
-Countdown to 2015 the publication cited that of the 75 priority countries
-followed by the analysis Mexico was part of the one third countries that was
-successful in achieving the goal of reducing under 5 mortality by two thirds
-[@victora_countdown_2016].
+In 2015 at the end of the tracking period of the Millennium Development goals (MDGs) the report Countdown to 2015 the publication cited that of the 75 priority countries followed by the analysis Mexico was part of the one third countries that was successful in achieving the goal of reducing under 5 mortality by two thirds [@victora_countdown_2016] [@lawn_countdown_2007]. The health sector reforms and programs that have made this goal achievable [@sepulveda_improvement_2006] [@king_public_2009] as well as the specific causes that have been reduced in order to meet this goal [@sepulveda_improvement_2006] have previously been documented however only a brief discussion on the within Mexico variability of under 5 mortality and its shifting distribution have been discussed[@sepulveda_improvement_2006]. As we change paradigms of evaluation from the MDGs to the Sustainable Development Goals (SDGs) a stronger focus has been placed on equity both within and among countries. Not only should we be making progress in reducing poverty, improving health and increasing years of education but sub populations with the least access to these resources should be increasing the fastest in order to lessen the gap.
