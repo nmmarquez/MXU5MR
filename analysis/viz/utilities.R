@@ -6,7 +6,7 @@ library(dplyr)
 library(dtplyr)
 library(ggplot2)
 
-DF <- fread("~/Documents/MXU5MR/analysis/outputs/model_phi.csv")
+DF <- fread("~/Documents/MXU5MR/analysis/outputs/model_phi5.csv")
 DF[,GEOID:=sprintf("%05d", GEOID)]
 DF[,INEGI:=DEATHS / POPULATION]
 DF[,SINAC:=DEATHS / POPULATION2]

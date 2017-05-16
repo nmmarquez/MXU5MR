@@ -9,9 +9,9 @@ files <- list.files("~/Documents/MXU5MR/nacimientos/data/dgis/", pattern=".mdb",
 DT <- rbindlist(lapply(files, function(x) 
     mdb.get(x, "NACIMIENTO", TRUE, stringsAsFactors=TRUE)[, vars]))
 
-DT[,ano:=lapply(strsplit(as.character(fech.nach), "/"), function(x) 
+DT[,ano:=sapply(strsplit(as.character(fech.nach), "/"), function(x) 
     as.integer(x[[length(x)]]))]
-DT[,ano.regis:=lapply(strsplit(as.character(fech.cert), "/"), function(x) 
+DT[,ano.regis:=sapply(strsplit(as.character(fech.cert), "/"), function(x) 
     as.integer(x[[length(x)]]))]
 DT[,regis.diff:=ano.regis - ano]
 DT[,ent.res:=sprintf("%02d", ent.res)]

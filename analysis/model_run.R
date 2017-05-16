@@ -69,6 +69,10 @@ model_run <- function(pinsamp=1, verbose=FALSE, option=1, seed=123, pop=1:2){
     # 1128.412   10.468 1140.782 
     Report <- Obj$report()
     Report$convergence <- Opt$convergence
+    sdrep <- sdreport(Obj, getJointPrecision = T)
+    Report$par.vals <- c(sdrep$par.fixed, sdrep$par.random)
+    Report$prec <- sdrep$jointPrecision
+    dyn.unload(dynlib(model))
     Report
 }
 
@@ -77,10 +81,14 @@ model_run <- function(pinsamp=1, verbose=FALSE, option=1, seed=123, pop=1:2){
 # 
 # save(ospv, file="~/Documents/MXU5MR/analysis/outputs/ospv_pop1.Rdata")
 
-DT[,Ratem1pop1:=c(model_run(pinsamp=1., option=1, pop=1)$RR)]
-DT[,Ratem1pop2:=c(model_run(pinsamp=1., option=1, pop=2)$RR)]
-DT[,Ratem1:=c(model_run(pinsamp=1., option=1, pop=1:2)$RR)]
+mods <- list(Ratem1pop1=model_run(pinsamp=1., option=1, pop=1),
+             Ratem1pop2=model_run(pinsamp=1., option=1, pop=2),
+             Ratem1=model_run(pinsamp=1., option=1, pop=1:2))
+
+DT[,Ratem1pop1:=c(mods$Ratem1pop1$RR)]
+DT[,Ratem1pop2:=c(mods$Ratem1pop2$RR)]
+DT[,Ratem1:=c(c(mods$Ratem1$RR))]
 
 
-
-fwrite(DT, "~/Documents/MXU5MR/analysis/outputs/model_phi.csv")
+save(mods, file="~/Documents/MXU5MR/analysis/outputs/model_covs.Rdata")
+fwrite(DT, "~/Documents/MXU5MR/analysis/outputs/model_phi3.csv")
