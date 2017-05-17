@@ -57,12 +57,11 @@ where $P$ is population number, $D$ is death number, $a$ is a single year age, a
 Each person level birth record data point which had a year of birth also included a year of registration. For each record we calculate the difference from the year of birth till the year of registration and assign the difference to its municipality of residence. The mean time of registration from birth for each district was calculated. In order to assess the degree of geospatial correlation that exists in these differences of registration time a Moran's I assessment is run.
 
 ### SPDE Modeling Strategies  
-In order to estimate the underlying mortality rate of municipalities within Mexico, especially in areas where observed populations are small, our modeling approach borrows strength across dimensions of geography, age, and time in order to disentangle the true underlying mortality rate from the process error that is observed. The functional form of the model is as follows  
+In order to estimate the underlying mortality rate of municipalities within Mexico, especially in areas where observed populations are small, our modeling approach borrows strength across dimensions of geography, age, and time in order to disentangle the true underlying mortality rate from the process error that is observed. This smoothing process is used extensively in demographic forecasting and small area estimation in order to draw predictive power from observations that are correlated and not underestimate the standard error of fixed effects[@girosi_demographic_2008, @banerjee_hierarchical_2003, @hodges_adding_2010, @currie_smoothing_2004]. The functional form of the model is as follows  
 
 $$
 D_{l,a,t} \sim Poisson(\hat{D}_{l,a,t})
 $$
-
 $$
 \hat{D}_{l,a,t} = exp(\beta_a + \phi_{l,a,t}) * P_{l,a,t}
 $$
@@ -73,4 +72,31 @@ $$
 Q_{x,y} = 0  \iff {u,v} \not\subset E
 $$
 
-$Q$ can be shown to be a GMRF because it is formed by taking the kronecker product of three well defined GMRFs and the property that the kronecker product of a set of GMRFs is itself a GMRF [@rue_gaussian_2005].
+$Q$ can be shown to be a GMRF because it is formed by taking the Kronecker product of three well defined GMRFs and the property that the Kronecker product of a set of GMRFs is itself a GMRF [@rue_gaussian_2005]. The three precision matrices that define $Q$ are $Q^t$, $Q^a$, and $Q^l$ which parameterize the correlations that exist between units of time, age, and geography respectively. It can then be seen that $Q$ is simply
+
+
+$$
+Q = Q^t \otimes Q^a \otimes Q^l
+$$
+
+$Q^t$ and $Q^a$ define the precision of a AR1 process, a type of GMRF, where the elements of $Q_{i,j}$ for either $Q^t$ or $Q^a$ are as follows of
+
+$$
+\begin{aligned}
+Q^{AR}_{i,j} =
+\begin{cases}
+    \frac{1}{\sigma^2} ,& \text{if  } i = j = 0 | i = j = max(i) \\
+    \frac{1 + \rho^2}{\sigma^2} ,& \text{else if  } i = j \\
+    \frac{-\rho}{\sigma^2},  & \text{else if  } i \sim j \\
+    0, & \text{otherwise}  
+\end{cases}
+ \end{aligned}
+$$
+
+where $i \sim j$ signifies two years or two age groups that are temporally adjacent to each other for $Q^t$ and $Q^a$ respectively and each matrix has its own $\sigma$ and $\rho$ henceforth referred to as $\sigma_t$, $\rho_t$, $\sigma_a$, and $\rho_a$.
+
+In order to define the precision of the $Q^l$ matrix we use two different modeling strategies. The more traditional epidemiological approach for modeling areal geographic units is to have the precision of geographical units follow a $lcar$ process [@lee_comparison_2011; @lawson_gaussian_2011] which has been used extensively in small area child mortality estimation [@mercer_spacetime_2015; @dwyer-lindgren_estimation_2014, @dwyer-lindgren_inequalities_2017, @dwyer-lindgren_error_2013]. The $lcar$  model defines the precision matrix such that any two spatial areas that share a border are said to be autoregressive and is parameterized by $\sigma_l$ and $\rho_l$. Though most studies have limited their analysis to only taking into account spatial and temporal effects more recent studies have begun to take into account the modeling of simultaneous age correlations as well [@dwyer-lindgren_inequalities_2017].  
+
+The alternative model defines $Q^l$ using a two dimensional matern covariance function defining the elements of the matrix  which is parameterized by $\tau_l$ and $\kappa_l$[@lindgren_explicit_2011; @rue_gaussian_2005]. This GMRF precision matrix has been well studied in recent years as it has been show to be able to be projected from a GMRF to a continuous Gaussian Field (GF) by using stochastic partial differential equations [@lindgren_explicit_2011] and has been implemented for user friendly use in the `R` software package `INLA` [@lindgren_bayesian_2015]. In this way we can estimate the risk surface of a continuous space rather than discrete points by accounting for the distance and correlation between the points that are sampled from the observed field. While this modeling of continuous space has more often been used in the field of ecology [@thorson_importance_2015; @bivand_spatial_2015] more recent studies have used this technique in order to estimate health risk fields and more specifically child mortality risk [@musenge_bayesian_2013; @golding_mapping_2017]. While our analysis will not try and estimate a continuous space a simulation detailed in the supplemental material shows that it is possible to estimate a continuous geographic space while jointly modeling separate correlation in time and age which to our knowledge has not been applied in the field of demography and is not currently implemented in `INLA`.
+
+In order to distinguish which precision matrix we will use we will represent $Q^l$ as $Q^{lcar}$ when using the $lcar$ precision formulation and $Q^{\mathcal{M}}$ when using the Matern formulation.
