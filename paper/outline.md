@@ -43,3 +43,12 @@ In this analysis we analyze the annual age specific mortality rates under the ag
 This analysis of municipality level mortality in Mexico has four areas of novel analysis and scientific contribution. First we will assess the geographic distribution of quality of vital registration coverage by assessing the municipality distribution of time from birth till registration. Second, we present a novel method for estimating small area child mortality rate which accounts for geographic proximity. Third, we apply this methodology and compare its results to other more traditional models. Fourth, we asses our models estimate of geographic distribution by assessing the geographic correlation in predicted mortality rates along with how the inequities in under five mortality have evolved, either diminishing, strengthening, or stagnating, over the course of the study period.
 
 ## Methods  
+
+### Data
+De-identified person level data was extracted from INEGI and SINAC vital registration reports for the years {year_start} to {year_end} for birth records. Of the {number_of_birth_records} birth records that were extracted  {muni_birthp} had a place of living municipality that was associated with the birth. The records that did not have a municipality associated with them were approximately evenly distributed across states and were discarded from the analysis. Death registration data was extracted from person level de-identified INEGI reports where place of living municipality was recorded, year of occurrence was given, and age of individual given by single year was provided. Of the {n_u5_deaths} deaths that were reported as under the age of 5, {p_u5_deaths} had values for single year age, single year time, and municipality that were valid. Since data was not linked by person and single year populations by single year age and municipality were not available in other data sources populations were estimated by taking the births of individuals for a particular municipality age and moving them one year forward in age as calendar year progressed while also subtracting off the deaths for that population. The formula is as follows
+
+$$
+P_{a,t} = P_{a-1,t-1} - D_{a-1,t-1}
+$$
+
+where $P$ is population number, $D$ is death number, $a$ is a single year age, and $t$ is a single year time period. This method assumes net zero migration for all demographic units which will have an effect on the mortality rate estimates depending on if net migration is above or below zero [@hildebrandt_effects_2005].
