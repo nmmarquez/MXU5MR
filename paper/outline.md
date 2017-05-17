@@ -57,4 +57,12 @@ where $P$ is population number, $D$ is death number, $a$ is a single year age, a
 Each person level birth record data point which had a year of birth also included a year of registration. For each record we calculate the difference from the year of birth till the year of registration and assign the difference to its municipality of residence. The mean time of registration from birth for each district was calculated. In order to assess the degree of geospatial correlation that exists in these differences of registration time a Moran's I assessment is run.
 
 ### SPDE Modeling Strategies  
-In order to estimate the underlying mortality rate of municipalities within Mexico. 
+In order to estimate the underlying mortality rate of municipalities within Mexico, especially in areas where observed populations are small, our modeling approach borrows strength across dimensions of geography, age, and time in order to disentangle the true underlying mortality rate from the process error that is observed. The functional form of the model is as follows  
+
+$$
+D_{l,a,t} \sim \mathcal{Poisson}(\hat{D}_{l,a,t})
+$$
+
+$$
+\hat{D}_{l,a,t} = \beta_a + \phi_{l,a,t}
+$$
