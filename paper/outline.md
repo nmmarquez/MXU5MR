@@ -32,7 +32,7 @@ municipality.
 
 Outline
 
-##Introduction
+##Introduction  
 
 In 2015 at the end of the tracking period of the Millennium Development goals (MDGs) the report Countdown to 2015 the publication cited that of the 75 priority countries followed by the analysis Mexico was part of the one third countries that was successful in achieving the goal of reducing under 5 mortality by two thirds [@victora_countdown_2016; @lawn_countdown_2007]. The health sector reforms and programs that have made this goal achievable [@sepulveda_improvement_2006; @king_public_2009] as well as the specific causes that have been reduced in order to meet this goal [@sepulveda_improvement_2006] have previously been documented however only a brief discussion on the within Mexico variability of under 5 mortality and its shifting distribution have been discussed [@sepulveda_improvement_2006; @wang_global_2016]. As we change paradigms of evaluation from the MDGs to the Sustainable Development Goals (SDGs) a stronger focus has been placed on equity both within and among countries. Not only should we be making progress in reducing poverty, improving health and increasing years of education but sub populations with the least access to these resources should be increasing the fastest in order to lessen the gap.
 
@@ -44,7 +44,7 @@ This analysis of municipality level mortality in Mexico has four areas of novel 
 
 ## Methods  
 
-### Data
+### Data  
 De-identified person level data was extracted from INEGI and SINAC vital registration reports for the years {year_start} to {year_end} for birth records. Of the {number_of_birth_records} birth records that were extracted  {muni_birthp} had a place of living municipality that was associated with the birth. The records that did not have a municipality associated with them were approximately evenly distributed across states and were discarded from the analysis. Death registration data was extracted from person level de-identified INEGI reports where place of living municipality was recorded, year of occurrence was given, and age of individual given by single year was provided. Of the {n_u5_deaths} deaths that were reported as under the age of 5, {p_u5_deaths} had values for single year age, single year time, and municipality that were valid. Since data was not linked by person and single year populations by single year age and municipality were not available in other data sources populations were estimated by taking the births of individuals for a particular municipality age and moving them one year forward in age as calendar year progressed while also subtracting off the deaths for that population. The formula is as follows
 
 $$
@@ -52,3 +52,9 @@ P_{a,t} = P_{a-1,t-1} - D_{a-1,t-1}
 $$
 
 where $P$ is population number, $D$ is death number, $a$ is a single year age, and $t$ is a single year time period. This method assumes net zero migration for all demographic units which will have an effect on the mortality rate estimates depending on if net migration is above or below zero [@hildebrandt_effects_2005].
+
+### Analysis of time till birth registration.  
+Each person level birth record data point which had a year of birth also included a year of registration. For each record we calculate the difference from the year of birth till the year of registration and assign the difference to its municipality of residence. The mean time of registration from birth for each district was calculated. In order to assess the degree of geospatial correlation that exists in these differences of registration time a Moran's I assessment is run.
+
+### SPDE Modeling Strategies  
+In order to estimate the underlying mortality rate of municipalities within Mexico. 
