@@ -60,9 +60,17 @@ Each person level birth record data point which had a year of birth also include
 In order to estimate the underlying mortality rate of municipalities within Mexico, especially in areas where observed populations are small, our modeling approach borrows strength across dimensions of geography, age, and time in order to disentangle the true underlying mortality rate from the process error that is observed. The functional form of the model is as follows  
 
 $$
-D_{l,a,t} \sim \mathcal{Poisson}(\hat{D}_{l,a,t})
+D_{l,a,t} \sim Poisson(\hat{D}_{l,a,t})
 $$
 
 $$
-\hat{D}_{l,a,t} = \beta_a + \phi_{l,a,t}
+\hat{D}_{l,a,t} = exp(\beta_a + \phi_{l,a,t}) * P_{l,a,t}
 $$
+
+where $l$ is a municipality and $\phi$ is a random effect term which is specific to a particular municipality, single year age, and single year time, and the other notations remain as previously specified. The $\phi$ term follows a a multivariate normal distribution with covariance matrix $Q^{-1}$ where $Q$ is the precision matrix of the multivariate normal process. For our model, it may also be stated that $\phi$ exhibits behavior of a Gaussian Markov Random Field (GMRF) as each demographic unit of $\phi$ is modeled as conditionally independent from other points which it does not share a border with. This can otherwise be stated as
+
+$$
+Q_{x,y} = 0  \iff {u,v} \not\subset E
+$$
+
+$Q$ can be shown to be a GMRF because it is formed by taking the kronecker product of three well defined GMRFs and the property that the kronecker product of a set of GMRFs is itself a GMRF [@rue_gaussian_2005].
