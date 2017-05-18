@@ -25,19 +25,7 @@ b_age_abs <- c(mods$Ratem1pop1$beta, mods$Ratem1pop1$beta + b_age)
 MRdraws <- exp(b_age_abs[DT$EDAD + 1] + phidraws)
 DT[,sterror:=apply(MRdraws, 1, sd)]
 
-jpeg("~/Documents/MXU5MR/analysis/plots/poperrors.jpg")
-ggplot(DT[YEAR!=2015], aes(POPULATION, sterror, group=EDAD, color=EDAD)) + 
-    geom_point(alpha=.4) + 
-    labs(x="Population", y=expression(M[x]~std.~err.), color="Age",
-         title="Demographics & Error")
-dev.off()
-
-jpeg("~/Documents/MXU5MR/analysis/plots/logpoperrors.jpg")
-ggplot(DT[YEAR!=2015,], aes(log(POPULATION+1), sterror, group=EDAD, color=EDAD)) + 
-    geom_point(alpha=.4) + 
-    labs(x="Log Population", y=expression(M[x]~std.~err.), color="Age",
-         title="Demographics & Error")
-dev.off()
+n
 
 ystart <- min(DT$YEAR)
 yend <- max(DT$YEAR)
@@ -56,8 +44,8 @@ DF5q0[,fqzh:=c(apply(q0array, c(1,2), quantile, probs=.975))]
 summary(DF5q0)
 
 
-hivals <- apply(q0array[,c(1,4),], c(2,3), quantile, .99)
-lovals <- apply(q0array[,c(1,4),], c(2,3), quantile, .01)
+hivals <- apply(q0array[,c(1,dim(q0array)[2]),], c(2,3), quantile, .99)
+lovals <- apply(q0array[,c(1,dim(q0array)[2]),], c(2,3), quantile, .01)
 
 ineqDT <- expand.grid(Year=as.factor(c(ystart, yend)), draw=1:1000,
                       measure=as.factor(c("Relative", "Absolute")))
@@ -70,6 +58,5 @@ ggplot(ineqDT, aes(x=ineq, fill=Year, color=Year)) + geom_density(alpha=.5) +
     facet_wrap(~measure, scales="free")
 dev.off()
 
-ineqDT[,mean(ineq), by=list(measure, Year)]
-ineqDT[,quantile(ineq, .025), by=list(measure, Year)]
-ineqDT[,quantile(ineq, .975), by=list(measure, Year)]
+1 - mean(apply(hivals / lovals, 2, function(x) x[2] -x[1]) > 0)
+1 - mean(apply(hivals - lovals, 2, function(x) x[2] -x[1]) > 0)
