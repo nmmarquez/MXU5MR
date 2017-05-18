@@ -16,3 +16,6 @@
 *.o
 *.dll
 *.pdf
+*.jpeg
+*.jpg
+*.png
