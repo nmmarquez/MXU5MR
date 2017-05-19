@@ -25,7 +25,17 @@ b_age_abs <- c(mods$Ratem1pop1$beta, mods$Ratem1pop1$beta + b_age)
 MRdraws <- exp(b_age_abs[DT$EDAD + 1] + phidraws)
 DT[,sterror:=apply(MRdraws, 1, sd)]
 
-n
+jpeg("~/Documents/MXU5MR/analysis/plots/poperrors.jpg")
+ggplot(DT[YEAR!=2015], aes(x=POPULATION, y=sterror, color=EDAD, group=EDAD)) + 
+    geom_point(alpha=.4) + labs(x="Population", title="Demographics & error",
+                                y=expression(M[x]~std.~err.))
+dev.off()
+
+jpeg("~/Documents/MXU5MR/analysis/plots/logpoperrors.jpg")
+ggplot(DT[YEAR!=2015], aes(x=log(POPULATION+1), y=sterror, color=EDAD, group=EDAD)) + 
+    geom_point(alpha=.4) + labs(x="Log Population", title="Demographics & error",
+                        y=expression(M[x]~std.~err.))
+dev.off()
 
 ystart <- min(DT$YEAR)
 yend <- max(DT$YEAR)
