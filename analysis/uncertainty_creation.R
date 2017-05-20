@@ -1,6 +1,6 @@
 rm(list=ls())
 
-pacman::p_load(INLA, TMB, data.table, ggplot2, dplyr, dtplyr, ineq)
+pacman::p_load(INLA, TMB, data.table, ggplot2, dplyr, dtplyr, ineq, INSP, surveillance)
 
 setwd("~/Documents/MXU5MR/analysis/outputs/")
 load("model_covs.Rdata")
@@ -28,14 +28,24 @@ DT[,sterror:=apply(MRdraws, 1, sd)]
 jpeg("~/Documents/MXU5MR/analysis/plots/poperrors.jpg")
 ggplot(DT[YEAR!=2015], aes(x=POPULATION, y=sterror, color=EDAD, group=EDAD)) + 
     geom_point(alpha=.4) + labs(x="Population", title="Demographics & error",
-                                y=expression(M[x]~std.~err.))
+                                y=expression(M[x]~std.~err.), color="Age")
 dev.off()
 
 jpeg("~/Documents/MXU5MR/analysis/plots/logpoperrors.jpg")
 ggplot(DT[YEAR!=2015], aes(x=log(POPULATION+1), y=sterror, color=EDAD, group=EDAD)) + 
     geom_point(alpha=.4) + labs(x="Log Population", title="Demographics & error",
-                        y=expression(M[x]~std.~err.))
+                        y=expression(M[x]~std.~err.), color="Age")
 dev.off()
+
+jpeg("~/Documents/MXU5MR/analysis/plots/morterrors.jpg")
+ggplot(DT[YEAR!=2015], aes(x=Ratem1pop1, y=sterror, color=log(POPULATION+1), 
+                           group=log(POPULATION+1))) + 
+    geom_point(alpha=.3) + labs(x=expression(M[x]), title="Demographics & error",
+                                y=expression(M[x]~std.~err.), color="Log Pop") +
+    scale_color_gradientn(colors=rainbow(5))
+dev.off()
+
+
 
 ystart <- min(DT$YEAR)
 yend <- max(DT$YEAR)
@@ -62,11 +72,24 @@ ineqDT <- expand.grid(Year=as.factor(c(ystart, yend)), draw=1:1000,
 ineqDT <- as.data.table(ineqDT)
 ineqDT[,ineq:=c(c(hivals / lovals), c(hivals - lovals))]
 
+1 - mean(apply(hivals / lovals, 2, function(x) x[2] -x[1]) > 0)
+1 - mean(apply(hivals - lovals, 2, function(x) x[2] -x[1]) > 0)
+
 jpeg("~/Documents/MXU5MR/analysis/plots/ineqpars.jpg")
 ggplot(ineqDT, aes(x=ineq, fill=Year, color=Year)) + geom_density(alpha=.5) +
     labs(x="Inequality Estimate", y="Density", title="Parameter Density") +
     facet_wrap(~measure, scales="free")
 dev.off()
 
-1 - mean(apply(hivals / lovals, 2, function(x) x[2] -x[1]) > 0)
-1 - mean(apply(hivals - lovals, 2, function(x) x[2] -x[1]) > 0)
+graph <- poly2adjmat(mx.sp.df)
+DT[,neigh:=rep(rowSums(graph), length(unique(DT$EDAD))*length(unique(DT$YEAR)))]
+
+DT[,edgey:=YEAR == ystart | YEAR == yend]
+DT[,edgea:=EDAD == 0]
+
+lm_var <- lm(sterror ~ Ratem1pop1 + neigh + (log(POPULATION+1) * EDAD),
+             data=DT[YEAR!=2015])
+summary(lm_var)
+varexpl <- anova(lm_var)$`Sum Sq` / sum(anova(lm_var)$`Sum Sq`)
+names(varexpl) <- row.names(anova(lm_var))
+varexpl
