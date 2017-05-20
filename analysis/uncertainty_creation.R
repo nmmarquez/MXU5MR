@@ -87,7 +87,7 @@ DT[,neigh:=rep(rowSums(graph), length(unique(DT$EDAD))*length(unique(DT$YEAR)))]
 DT[,edgey:=YEAR == ystart | YEAR == yend]
 DT[,edgea:=EDAD == 0]
 
-lm_var <- lm(sterror ~ Ratem1pop1 + neigh + (log(POPULATION+1) * EDAD),
+lm_var <- lm(sterror ~ Ratem1pop1 * log(POPULATION+1) * EDAD * neigh,
              data=DT[YEAR!=2015])
 summary(lm_var)
 anovasd <- anova(lm_var)
@@ -95,3 +95,6 @@ varexpl <- anovasd$`Sum Sq` / sum(anovasd$`Sum Sq`)
 names(varexpl) <- row.names(anovasd)
 print(varexpl * 100)
 print(summary(lm_var))
+print(anovasd)
+
+sum(varexpl[c("Ratem1pop1", "log(POPULATION + 1)", "Ratem1pop1:log(POPULATION + 1)")])
