@@ -90,6 +90,8 @@ DT[,edgea:=EDAD == 0]
 lm_var <- lm(sterror ~ Ratem1pop1 + neigh + (log(POPULATION+1) * EDAD),
              data=DT[YEAR!=2015])
 summary(lm_var)
-varexpl <- anova(lm_var)$`Sum Sq` / sum(anova(lm_var)$`Sum Sq`)
-names(varexpl) <- row.names(anova(lm_var))
-varexpl
+anovasd <- anova(lm_var)
+varexpl <- anovasd$`Sum Sq` / sum(anovasd$`Sum Sq`)
+names(varexpl) <- row.names(anovasd)
+print(varexpl * 100)
+print(summary(lm_var))
