@@ -40,6 +40,8 @@ Evaluating the disparate state of health outcomes within administrative boundari
 
 In this analysis we analyze the annual age specific mortality rates under the age of 5 at the municipality level within Mexico. Analyzing health outcomes at small geographical units can assess discrepancies in the health that are due to an unequal spatial distribution of health system resources but also can uncover discrepancies in subpopulations by class, race, and ethnicity whom tend to cluster in space [@soja_seeking_2010]. Though previous studies have examined how child mortality differs within Mexico at comprehensive level, the smallest unit of analysis has only been at the state level within Mexico [@sepulveda_improvement_2006; @wang_global_2016]. In more recent studies of inequality in mortality in the United States [@dwyer-lindgren_inequalities_2017], analysis has shown that state level analysis can mask inequalities that are geographically correlated at more detailed levels. In addition to this the quality of the vital registration system in Mexico has been praised in terms of being able to accurately identify cause of death [@morris_predicting_2003; @mahapatra_civil_2007] but the coverage of the system has been examined less in terms of documenting those who are living in poorer rural geographies [@_under-registration_2012].
 
+By examining how the distribution of mortality changes we intend to describe how Mexico has shifted its mortality burden distribution at the municipality level. A lowering of the mortality rates is not necessarily correlated with increases or decreases in the relative or absolute inequality of the burden. By measuring both relative and absolute inequality at the start and end of our longitudinal analysis we intend to highlight one of three scenarios by which Mexico has reduced national mortality rates. We highlight three scenarios in figure 0 where we show how the distribution can shift from the 1990 under 5 mortality rate of 48 children per 1000 to the target rate of 16 children per 1000. In scenario 1 bot the skew and the variance of the municipality distribution is decreasing which leads to lower absolute and relative inequality. Scenario 2 shows an instance where skew remains constant and variance decreases, which leads to a decrease in the absolute inequality but increase in relative inequality. While arguments can be made for either of these scenarios to be the target distribution of our mortality outcomes, the distribution we wish to avoid is scenario 3 where we have increases in skew and variance which lead to increases in relative and absolute inequality.
+
 This analysis of municipality level mortality in Mexico has four areas of novel analysis and scientific contribution. First we will assess the geographic distribution of quality of vital registration coverage by assessing the municipality distribution of time from birth till registration. Second, we present a novel method for estimating small area child mortality rate which accounts for geographic proximity. Third, we apply this methodology and compare its results to other more traditional models. Fourth, we asses our models estimate of geographic distribution by assessing the geographic correlation in predicted mortality rates along with how the inequities in under five mortality have evolved, either diminishing, strengthening, or stagnating, over the course of the study period.
 
 ## Methods  
@@ -101,6 +103,29 @@ The alternative model defines $Q^l$ using a two dimensional matern covariance fu
 
 In order to distinguish which precision matrix used in each modeling approach use we will represent $Q^l$ as $Q^{lcar}$ when using the $lcar$ precision formulation and $Q^{\mathcal{M}}$ when using the Matern formulation.
 
+The full model parameter hierarchy then is as follows
+
+$$
+D_{l,a,t} \sim Poisson(\hat{D}_{l,a,t})
+$$
+$$
+\hat{D}_{l,a,t} = \hat{M}_{l,a,t} * P_{l,a,t}
+$$
+$$
+\hat{M}_{l,a,t} = exp(\beta_a + \phi_{l,a,t})
+$$
+$$
+\phi_{l,a,t} \sim \mathcal{N}(0, Q^{-1})
+$$
+$$
+Q = (Q^{lcar} | Q^{\mathcal{M}}) \otimes Q^a \otimes Q^t
+$$
+$$
+Q^{lcar} = f^{lcar}(\rho_l, \sigma_l);
+Q^{\mathcal{M}} = f^{\mathcal{M}}(\kappa_l, \tau_l);
+Q^{a} = f^{AR1}(\rho_a, \sigma_a); Q^{t} = f^{AR1}(\rho_t, \sigma_t)
+$$
+
 In order to estimate our two models we will use a Restricted Maximum Likelihood (REML) approach and the software package TMB [@thorson_importance_2015] which uses integrated nested Laplace approximations and automatic differentiation to find the gradient of the optimization process for fixed effects [@fournier_ad_2012]. From the set of parameters $\{\mathbf{\beta}, \sigma_a, \rho_a, \sigma_t, \rho_t, \sigma_l | \tau_l, \rho_l | \kappa_l, \phi\}$ only the phi array is treated as a random effect. `R` version 3.4.0 was used for the analysis.
 
 ### Age Specific Mortality rate estimates  
@@ -117,6 +142,11 @@ Assessing the two model variants for making estimates of yearly age specific mor
 Mortality rates for each municipality, single year age, and year were calculated
 and a full set of map visualizations for the time series may be found [here](http://krheuton-dev.ihme.washington.edu:3838/MXU5MRviz/). The analysis showed that there were strong correlations in all three demographic dimensions with values of $\rho_l$, $\rho_a$ and $\rho_t$ being {{rhol}}, {{rhoa}}, {{rhot}} respectively. The estimated underlying mortality rate distribution of the time series, standard deviation {u5mrsd}, was much narrower than the observed data crude mortality rates {crude}. This is to be expected because outlier and small area observations are smoothed over in our hierarchical model. Despite this we still see strong geographic clustering in our estimates as seen in figure 1 and the Moran's I of estimated values in 2015 {{rezmoransi}}.
 
+The estimated values for$~_5q_{0}$ for the aggregated 2015 national levels were found to be similar to both United Nations {UN_vaule} [@victora_countdown_2016] and the Institute for Health Metrics and Evaluation {IHME_value}. The comparison between our estimates and the yearly estimates for both these sources as well as the state level$~_5q_{0}$ values for the time series can be found in the appendix.
+
 In order to assess the critique of other similar models of$~_5q_{0}$ analysis we examined how our estimates of uncertainty in age specific mortality rates were explained by different components of the model. In figure 2 and figure 3 we show how the the hierarchical $Q^{lcar}$ model varies estimates of uncertainty in the mortality rate as a function of age, population size, and the mortality rate itself. In an analysis of variance where mortality rate standard deviation was the outcome we found that {lmr2} of the variance in the standard deviation was explained by the level of the mortality rate, log population size, age, and number of neighbors along with their product wise interactions. The estimated mortality rate, the log population size, and their intersection explained {lmr2sub} alone.
 
-Estimates of absolute and relative inequality of 5q0 were calculated for the first and last year of the study. The difference in absolute inequality was found to be negligible {abineq} while the difference in relative inequality was shown to be increasing over the time of the study {relineq}.
+Estimates of absolute and relative inequality of 5q0 were calculated for the first and last year of the study. The difference in absolute inequality was found to be negligible {abineq} while the difference in relative inequality was shown to be increasing over the time of the study {relineq}. These results are in line with the increased skew and increased variance scenario presented earlier.
+
+## Discussion
+In this analysis we showed that there has been an increase in the relative inequality of under five mortality in Mexico by district from {{start_year}} to {{end_year}}. This outcome is in line with a increased skew and variance of the distribution of mortality rates. The estimated parameter values of relative and absolute mortality are shown in figure 4. This widening gap of within country mortality rates is not as general rates decrease is not a new phenomena as previous studies have shown similar outcomes in probability of death in the United States by county[@dwyer-lindgren_inequalities_2017].
