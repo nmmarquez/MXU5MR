@@ -6,7 +6,7 @@ save_dir <- "~/Documents/MXU5MR/nacimientos/data/inegi/"
 urls <- sapply(1985:2015, function(x) gsub("#", x, url_))
 
 tempfiles <- sapply(1:length(urls), function(x) tempfile())
-extr_dir <- tempdir()
+extr_dir <- "/homes/nmarquez/Downloads/tmp"
 
 mapply(download.file, urls, tempfiles)
 
