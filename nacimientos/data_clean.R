@@ -6,10 +6,11 @@ rm(list=ls())
 pacman::p_load(foreign, data.table, ggplot2, INSP, dplyr, plotly)
 
 ### 1) load in the data
-data_home <- "~/Documents/MXU5MR/nacimientos/data/"
-years <- as.character(2006:2015)
+data_home <- "~/Documents/MXU5MR/nacimientos/data/inegi/"
+years <- as.character(1985:2015)
 abv_year <- sapply(strsplit(years, ""), function(x) paste0(x[3], x[4]))
-fpaths <- paste0(data_home, "natalidad", years, "/NACIM", abv_year, ".dbf")
+#fpaths <- paste0(data_home, "natalidad", years, "/NACIM", abv_year, ".dbf")
+fpaths <- paste0(data_home, "/NACIM", abv_year, ".dbf")
 var_names <- c("SEXO", "ANO_REG", "ANO_NAC", "ENT_RESID", "MUN_RESID",
                "ENT_REGIS", "MUN_REGIS")
 births <- rbindlist(lapply(fpaths, function(x)
@@ -43,9 +44,9 @@ mx.sp.df@data <- left_join(mx.sp.df@data, missdf)
 mx.sp.df@data <- left_join(mx.sp.df@data, logdf)
 mx.sp.df@data <- left_join(mx.sp.df@data, births[,.N,by=GEOID])
 
-spdf2leaf(mx.sp.df, col="REG_DIFFN", label="Registration <br>Time (Years)")
-spdf2leaf(mx.sp.df, col="N", label="Birth<br>Count")
-spdf2leaf(mx.sp.df, col="log_birth", label="Log Birth<br>Count")
+#spdf2leaf(mx.sp.df, col="REG_DIFFN", label="Registration <br>Time (Years)")
+#spdf2leaf(mx.sp.df, col="N", label="Birth<br>Count")
+#spdf2leaf(mx.sp.df, col="log_birth", label="Log Birth<br>Count")
 
 # 4) Correlation between delay in registering birth and pop count in an area
 gg1 <- ggplot(data=mx.sp.df@data,
