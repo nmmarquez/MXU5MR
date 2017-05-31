@@ -19,8 +19,8 @@ deaths2
 
 pops <- fread("~/Documents/MXU5MR/nacimientos/outputs/deathlesspopcounts.csv")
 pops[,COHORT:= YEAR - EDAD]
-popsdgis <- fread("~/Documents/MXU5MR/nacimientos/outputs/deathlesspopcountsdgis.csv")
-popsdgis[,COHORT:= YEAR - EDAD]
+#popsdgis <- fread("~/Documents/MXU5MR/nacimientos/outputs/deathlesspopcountsdgis.csv")
+#popsdgis[,COHORT:= YEAR - EDAD]
 
 for(i in 1:4){
     subdeath <- subset(deaths2, EDAD == i)
@@ -30,17 +30,17 @@ for(i in 1:4){
     pops[EDAD < i, DEATHS:=0]
     pops[,N:=N - DEATHS]
     pops[,DEATHS:=NULL]
-    popsdgis <- as.data.table(left_join(popsdgis, subdeath))
-    popsdgis[is.na(DEATHS), DEATHS:=0]
-    popsdgis[EDAD < i, DEATHS:=0]
-    popsdgis[,N:=N - DEATHS]
-    popsdgis[,DEATHS:=NULL]
+    #popsdgis <- as.data.table(left_join(popsdgis, subdeath))
+    #popsdgis[is.na(DEATHS), DEATHS:=0]
+    #popsdgis[EDAD < i, DEATHS:=0]
+    #popsdgis[,N:=N - DEATHS]
+    #popsdgis[,DEATHS:=NULL]
 }
 
 pops[,POPULATION:=N]
-popsdgis[,POPULATION2:=N]
+#popsdgis[,POPULATION2:=N]
 pops[,c("N", "COHORT"):=NULL]
-popsdgis[,c("N", "COHORT"):=NULL]
+#popsdgis[,c("N", "COHORT"):=NULL]
 
 deaths[,YEAR:=ANIO_OCUR]
 deaths[,EDAD:=EDADN]
@@ -51,9 +51,9 @@ deaths
 demog <- subset(as.data.table(merge(pops, deaths, all=TRUE, 
                                     by=c("SEXO", "GEOID", "YEAR", "EDAD"))),
                 YEAR <= 2015 & SEXO %in% c(1,2) & MUN_RESID != 999)
-demog <- as.data.table(merge(demog, popsdgis, all=TRUE, 
-                             by=c("SEXO", "ENT_RESID", "MUN_RESID", "GEOID", 
-                                  "EDAD", "YEAR")))
+#demog <- as.data.table(merge(demog, popsdgis, all=TRUE, 
+#                             by=c("SEXO", "ENT_RESID", "MUN_RESID", "GEOID", 
+#                                  "EDAD", "YEAR")))
 demog <- subset(demog, SEXO %in% c(1,2) & MUN_RESID != 999 & ENT_RESID <= 32)
 summary(demog)
 
@@ -62,9 +62,9 @@ subset(demog, COHORT == 2012 & GEOID == 1001)
 
 demog[is.na(DEATHS), DEATHS:=0]
 demog[is.na(POPULATION), POPULATION:=0]
-demog[is.na(POPULATION2), POPULATION2:=0]
+#demog[is.na(POPULATION2), POPULATION2:=0]
 demog[POPULATION<DEATHS,POPULATION:=DEATHS]
-demog[POPULATION2<DEATHS,POPULATION2:=DEATHS]
+#demog[POPULATION2<DEATHS,POPULATION2:=DEATHS]
 summary(demog)
 
 muni_level <- demog[, lapply(list(POPULATION, DEATHS), sum), by=GEOID]
@@ -88,26 +88,26 @@ ggplot(data=mx.sp.df@data, aes(x=POPAVG, y=DEATHS)) +
 head(demog)
 hist(log(demog$DEATHS + 1))
 
-ya_df <- demog[,lapply(list(POPULATION, DEATHS, POPULATION2), sum), by=list(YEAR, EDAD)]
-setnames(ya_df, names(ya_df), c("YEAR", "EDAD", "POPULATION", "DEATHS", "POPULATION2"))
-ya_df[,RT:=DEATHS/POPULATION]
-ya_df[,RT1000:=RT*10**3]
-subset(ya_df, EDAD == 1)
+#ya_df <- demog[,lapply(list(POPULATION, DEATHS, POPULATION2), sum), by=list(YEAR, EDAD)]
+#setnames(ya_df, names(ya_df), c("YEAR", "EDAD", "POPULATION", "DEATHS", "POPULATION2"))
+#ya_df[,RT:=DEATHS/POPULATION]
+#ya_df[,RT1000:=RT*10**3]
+#subset(ya_df, EDAD == 1)
 
-yearly_df <- demog[,lapply(list(POPULATION, DEATHS, POPULATION2), sum), by=list(YEAR)]
-setnames(yearly_df, names(yearly_df), c("YEAR", "POPULATION", "DEATHS", "POPULATION2"))
-yearly_df[,RT:=DEATHS/POPULATION]
-yearly_df[,RT1000:=RT*10**3]
-yearly_df[,RT2:=DEATHS/POPULATION2]
-yearly_df[,RT21000:=RT2*10**3]
-yearly_df
+#yearly_df <- demog[,lapply(list(POPULATION, DEATHS, POPULATION2), sum), by=list(YEAR)]
+#setnames(yearly_df, names(yearly_df), c("YEAR", "POPULATION", "DEATHS", "POPULATION2"))
+#yearly_df[,RT:=DEATHS/POPULATION]
+#yearly_df[,RT1000:=RT*10**3]
+#yearly_df[,RT2:=DEATHS/POPULATION2]
+#yearly_df[,RT21000:=RT2*10**3]
+#yearly_df
 
 demog
-demogss <- demog[, lapply(list(POPULATION, DEATHS, POPULATION2), sum),
+demogss <- demog[, lapply(list(POPULATION, DEATHS), sum),
                  by=list(ENT_RESID, MUN_RESID, GEOID, EDAD, YEAR)]
 setnames(demogss, names(demogss),
          c("ENT_RESID", "MUN_RESID", "GEOID", "EDAD", "YEAR", "POPULATION", 
-           "DEATHS", "POPULATION2"))
+           "DEATHS"))
 
 prod(sapply(c("GEOID", "YEAR", "EDAD"), function(x) length(unique(demogss[[x]]))))
 

@@ -29,8 +29,8 @@ pop_count <- function(year, df=birth_counts, sub1=FALSE){
     return(subdf)
 }
 
-year_pops <- rbindlist(lapply(2012:2015, pop_count))
-year_pops2 <- rbindlist(lapply(2012:2015, pop_count, sub1=TRUE))
+year_pops <- rbindlist(lapply(1995:2015, pop_count))
+year_pops2 <- rbindlist(lapply(1995:2015, pop_count, sub1=TRUE))
 
 fwrite(year_pops, file="./outputs/deathlesspopcounts.csv")
 fwrite(year_pops2, file="./outputs/deathlesspopcountsexpanded.csv")
