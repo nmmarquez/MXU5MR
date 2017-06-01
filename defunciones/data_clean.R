@@ -6,10 +6,10 @@ rm(list=ls())
 pacman::p_load(foreign, data.table, ggplot2, INSP, dplyr, plotly)
 
 ### 1) load in the data
-data_home <- "~/Documents/MXU5MR/defunciones/data/"
-years <- as.character(2005:2015)
+data_home <- "~/Documents/MXU5MR/defunciones/data/inegi/"
+years <- as.character(1990:2015)
 abv_year <- sapply(strsplit(years, ""), function(x) paste0(x[3], x[4]))
-fpaths <- paste0(data_home, "defunc", years, "/DEFUN", abv_year, ".dbf")
+fpaths <- paste0(data_home, "DEFUN", abv_year, ".dbf")
 
 var_names <- c("SEXO", "ENT_RESID", "MUN_RESID", "ENT_OCURR", "MUN_OCURR",
                "EDAD", "ANIO_REGIS", "ANIO_OCUR")
@@ -30,7 +30,7 @@ deaths[,GEOID:=paste0(ENT_RESID, MUN_RESID)]
 deaths[,EDADN:=EDAD-4000]
 deaths[EDAD<4000, EDADN:=0]
 deaths[,REGIS_DIFFN:=ANIO_REGIS - ANIO_OCUR]
-deaths <- subset(deaths, ANIO_OCUR <= 2015 & ANIO_OCUR >= 2004)
+deaths <- subset(deaths, ANIO_OCUR <= 2015 & ANIO_OCUR >= 2000)
 deaths <- subset(deaths,  EDADN < 5)
 
 # create edad2
@@ -53,7 +53,7 @@ mx.sp.df@data <- left_join(mx.sp.df@data, missdf)
 
 timedf <- deaths[,.N,by=ANIO_OCUR]
 
-gg1 <- ggplot(data=subset(timedf, ANIO_OCUR >= 2005), aes(x=ANIO_OCUR, y=N)) + 
+gg1 <- ggplot(data=subset(timedf, ANIO_OCUR >= 2000), aes(x=ANIO_OCUR, y=N)) + 
     geom_line()
 
 ggplotly(gg1)

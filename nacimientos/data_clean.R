@@ -3,7 +3,7 @@
 # analaysis of population estimates to be used in U5MR model
 ################################################################################
 rm(list=ls())
-pacman::p_load(foreign, data.table, ggplot2, INSP, dplyr, plotly)
+pacman::p_load(foreign, data.table, ggplot2, INSP, dplyr, plotly, sp, spdep, leaflet, rgdal)
 
 ### 1) load in the data
 data_home <- "~/Documents/MXU5MR/nacimientos/data/inegi/"

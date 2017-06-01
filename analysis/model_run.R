@@ -17,6 +17,7 @@ year <- sort(unique(demog$YEAR))
 # create data table with all combinations of geoid, age, and year
 DT <- as.data.table(expand.grid(GEOID=geoid, EDAD=age, YEAR=year))
 DT <- as.data.table(left_join(DT, demog))
+DT[,POPULATION2:=POPULATION]
 DT[is.na(POPULATION), POPULATION:=0]
 DT[YEAR == 2015, POPULATION:=0]
 DT[is.na(POPULATION2), POPULATION2:=0]
@@ -25,6 +26,7 @@ summary(DT$DEATHS > DT$POPULATION)
 summary(DT$DEATHS > DT$POPULATION2)
 
 ### build spde
+INLA:::inla.dynload.workaround()
 mesh <- gCentroid(mx.sp.df, byid=T) %>% inla.mesh.create
 plot(mx.sp.df)
 plot(mesh)
@@ -81,14 +83,12 @@ model_run <- function(pinsamp=1, verbose=FALSE, option=1, seed=123, pop=1:2){
 # 
 # save(ospv, file="~/Documents/MXU5MR/analysis/outputs/ospv_pop1.Rdata")
 
-mods <- list(Ratem1pop1=model_run(pinsamp=1., option=1, pop=1),
-             Ratem1pop2=model_run(pinsamp=1., option=1, pop=2),
-             Ratem1=model_run(pinsamp=1., option=1, pop=1:2))
+mods <- list(Ratem1pop1=model_run(pinsamp=1., option=1, pop=1))
 
 DT[,Ratem1pop1:=c(mods$Ratem1pop1$RR)]
-DT[,Ratem1pop2:=c(mods$Ratem1pop2$RR)]
-DT[,Ratem1:=c(c(mods$Ratem1$RR))]
+DT[,Ratem1pop2:=c(mods$Ratem1pop1$RR)]
+DT[,Ratem1:=c(mods$Ratem1pop1$RR)]
 
 
-save(mods, file="~/Documents/MXU5MR/analysis/outputs/model_covs.Rdata")
-fwrite(DT, "~/Documents/MXU5MR/analysis/outputs/model_phi3.csv")
+save(mods, file="~/Documents/MXU5MR/analysis/outputs/model_covs_full.Rdata")
+fwrite(DT, "~/Documents/MXU5MR/analysis/outputs/model_phi_full.csv")
