@@ -26,6 +26,12 @@ MRdraws <- exp(b_age_abs[DT$EDAD + 1] + phidraws)
 DT[,sterror:=apply(MRdraws, 1, sd)]
 
 jpeg("~/Documents/MXU5MR/analysis/plots/poperrors.jpg")
+ggplot(DT[YEAR == 2015,], aes(x=EDAD+1, y=log(Ratem1pop1), group=GEOID)) +
+    geom_line(alpha=.1) + 
+    labs(x="Age", y="Log Mortality Rate", title="Mortality by Municipality")
+dev.off()
+
+jpeg("~/Documents/MXU5MR/analysis/plots/poperrors.jpg")
 ggplot(DT[YEAR!=2015], aes(x=POPULATION, y=sterror, color=EDAD, group=EDAD)) + 
     geom_point(alpha=.4) + labs(x="Population", title="Demographics & error",
                                 y=expression(M[x]~std.~err.), color="Age")
@@ -64,8 +70,18 @@ DF5q0[,fqzh:=c(apply(q0array, c(1,2), quantile, probs=.975))]
 summary(DF5q0)
 
 
-hivals <- apply(q0array[,c(1,dim(q0array)[2]),], c(2,3), quantile, .99)
-lovals <- apply(q0array[,c(1,dim(q0array)[2]),], c(2,3), quantile, .01)
+hivals <- apply(q0array, c(2,3), quantile, .99)
+lovals <- apply(q0array, c(2,3), quantile, .01)
+relineq <- hivals / lovals
+apply(relineq, 1, mean)
+apply(relineq, 1, quantile, probs=.975)
+apply(relineq, 1, quantile, probs=.025)
+
+DTineq <- data.table(year=ystart:yend, relineq=apply(relineq, 1, mean),
+                     relineqlow=apply(relineq, 1, quantile, probs=.025),
+                     relineqhi=apply(relineq, 1, quantile, probs=.975))
+ggplot(DTineq, aes(x=year, y=relineq)) + geom_line() + 
+    geom_ribbon(aes(x=year, ymin=relineqlow, ymax=relineqhi), alpha=.25)
 
 ineqDT <- expand.grid(Year=as.factor(c(ystart, yend)), draw=1:1000,
                       measure=as.factor(c("Relative", "Absolute")))
