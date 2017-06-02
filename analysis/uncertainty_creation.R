@@ -25,10 +25,11 @@ b_age_abs <- c(mods$Ratem1pop1$beta, mods$Ratem1pop1$beta + b_age)
 MRdraws <- exp(b_age_abs[DT$EDAD + 1] + phidraws)
 DT[,sterror:=apply(MRdraws, 1, sd)]
 
-jpeg("~/Documents/MXU5MR/analysis/plots/poperrors.jpg")
+jpeg("~/Documents/MXU5MR/analysis/plots/logmortalitymuni.jpg")
 ggplot(DT[YEAR == 2015,], aes(x=EDAD+1, y=log(Ratem1pop1), group=GEOID)) +
     geom_line(alpha=.1) + 
-    labs(x="Age", y="Log Mortality Rate", title="Mortality by Municipality")
+    labs(x="Age", y="Log Mortality Rate", title="Mortality by Municipality") + 
+    theme_set(theme_gray(base_size = 28))
 dev.off()
 
 jpeg("~/Documents/MXU5MR/analysis/plots/poperrors.jpg")
@@ -40,7 +41,8 @@ dev.off()
 jpeg("~/Documents/MXU5MR/analysis/plots/logpoperrors.jpg")
 ggplot(DT[YEAR!=2015], aes(x=log(POPULATION+1), y=sterror, color=EDAD, group=EDAD)) + 
     geom_point(alpha=.4) + labs(x="Log Population", title="Demographics & error",
-                        y=expression(M[x]~std.~err.), color="Age")
+                        y=expression(M[x]~std.~err.), color="Age") + 
+    theme_set(theme_gray(base_size = 28))
 dev.off()
 
 jpeg("~/Documents/MXU5MR/analysis/plots/morterrors.jpg")
@@ -81,7 +83,8 @@ DTineq <- data.table(year=ystart:yend, relineq=apply(relineq, 1, mean),
                      relineqlow=apply(relineq, 1, quantile, probs=.025),
                      relineqhi=apply(relineq, 1, quantile, probs=.975))
 ggplot(DTineq, aes(x=year, y=relineq)) + geom_line() + 
-    geom_ribbon(aes(x=year, ymin=relineqlow, ymax=relineqhi), alpha=.25)
+    geom_ribbon(aes(x=year, ymin=relineqlow, ymax=relineqhi), alpha=.25) + 
+    labs(x="Year", y="Relative Inequality", title="5Q0 Inequality")
 
 ineqDT <- expand.grid(Year=as.factor(c(ystart, yend)), draw=1:1000,
                       measure=as.factor(c("Relative", "Absolute")))
@@ -114,3 +117,8 @@ print(summary(lm_var))
 print(anovasd)
 
 sum(varexpl[c("Ratem1pop1", "log(POPULATION + 1)", "Ratem1pop1:log(POPULATION + 1)")])
+
+mean(apply(q0array[,4,], 1, mean) < .016)
+mean(apply(q0array[,4,], 1, quantile, probs=.95) < .016)
+sort(table(substring(sprintf("%05d", unique(DT$GEOID)),1,2)[which(apply(q0array[,4,], 1, quantile, probs=.95) < .016)]))
+sort(table(substring(sprintf("%05d", unique(DT$GEOID)),1,2)))
