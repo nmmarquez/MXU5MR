@@ -1,6 +1,7 @@
 rm(list=ls())
 
-pacman::p_load(INLA, TMB, data.table, ggplot2, dplyr, dtplyr, ineq, INSP, surveillance)
+pacman::p_load(INLA, TMB, data.table, ggplot2, dplyr, dtplyr, ineq, INSP, 
+               surveillance, clusterPower)
 
 setwd("~/Documents/MXU5MR/analysis/outputs/")
 load("./ospv_pop1.Rdata")
@@ -9,12 +10,30 @@ source("~/Documents/MXU5MR/utilities/utilities.R")
 
 DT <- fread("./model_phi_full.csv")
 
+# plug the quick stuff
 plugs <- list()
 plugs["year_start"] <- min(DT$YEAR)
 plugs["year_end"] <- max(DT$YEAR)
 plugs["IHME_value"] <- ".0154 (.0117-.0200)"
 plugs["UN_value"] <- ".0132"
-plugs["aad_u5mr_est"] <- round(abs(ospv$m1[2] - ospv$m2[2]) / (length(unique(DT$GEOID)) * 5 * 4 * .8), 3)
+plugs["aad_u5mr_est"] <- round(abs(ospv$m1[2] - ospv$m2[2]) / 
+                                   (length(unique(DT$GEOID)) * 5 * 4 * .8), 3)
+plugs["oosnllM"] <- ospv$m1[2]
+plugs["oosnlllcar"] <- ospv$m2[2]
+
+# plug the param values
+fixidx <- which(row.names(mods$Ratem1pop1$prec) != "phi")
+sds <- diag(MASS::ginv(as.matrix(mods$Ratem1pop1$prec[fixidx, fixidx])))**.5 * 1.98
+names(sds) <- row.names(mods$Ratem1pop1$prec)[fixidx]
+
+rhomax <- expit(logit(mods$Ratem1pop1$rho) + sds[names(sds) == "logit_rho"])
+rhomax <- c(rhomax, expit(logit(mods$Ratem1pop1$sprho) + sds[names(sds) == "spparams"][1]))
+rhomin <- expit(logit(mods$Ratem1pop1$rho) - sds[names(sds) == "logit_rho"])
+rhomin <- c(rhomin, expit(logit(mods$Ratem1pop1$sprho) - sds[names(sds) == "spparams"][1]))
+
+plugs["rhoa"] <- format_uncert(mods$Ratem1pop1$rho[1], rhomin[1], rhomax[1])
+plugs["rhot"] <- format_uncert(mods$Ratem1pop1$rho[2], rhomin[2], rhomax[2])
+plugs["rhol"] <- format_uncert(mods$Ratem1pop1$sprho, rhomin[3], rhomax[3])
 
 # lets take the precision of just the random effects since the random effects
 # and fixed effects are independent from one another
@@ -51,6 +70,11 @@ h_ <- round(apply(as.matrix(natdraws), 1, quantile, probs=.975)[nrow(natdraws)],
 
 plugs["model_value"] <- paste0(m_, " (", l_, ", ", h_, ")")
 write_plugs(plugs)
+
+# 
+plugs["u5mrsd"] <- sd(with(subset(DT, POPULATION2 != 0), DEATHS / POPULATION2))
+plugs["crude"] <- sd(with(subset(DT, POPULATION2 != 0), Ratem1pop1))
+
 
 jpeg("~/Documents/MXU5MR/analysis/plots/logmortalitymuni.jpg")
 ggplot(DT[YEAR == 2015,], aes(x=EDAD+1, y=log(Ratem1pop1), group=GEOID)) +

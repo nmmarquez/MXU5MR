@@ -9,3 +9,7 @@ write_plugs <- function(named_list){
   exportJson <- toJSON(json_data)
   write(exportJson, f_)
 }
+
+format_uncert <- function(mean, min, max, sig=4){
+    paste0(round(mean, sig), " (", round(min, sig), "-", round(max, sig), ")")
+}
