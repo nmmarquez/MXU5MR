@@ -3,12 +3,18 @@ rm(list=ls())
 pacman::p_load(INLA, TMB, data.table, ggplot2, dplyr, dtplyr, ineq, INSP, surveillance)
 
 setwd("~/Documents/MXU5MR/analysis/outputs/")
-load("model_covs.Rdata")
+load("./ospv_pop1.Rdata")
+load("model_covs_full.Rdata")
+source("~/Documents/MXU5MR/utilities/utilities.R")
 
-DT <- fread("./model_phi3.csv")
+DT <- fread("./model_phi_full.csv")
 
-head(row.names(mods$Ratem1pop1$prec), n=15)
-tail(row.names(mods$Ratem1pop1$prec), n=15)
+plugs <- list()
+plugs["year_start"] <- min(DT$YEAR)
+plugs["year_end"] <- max(DT$YEAR)
+plugs["IHME_value"] <- ".0154 (.0117-.0200)"
+plugs["UN_value"] <- ".0132"
+plugs["aad_u5mr_est"] <- round(abs(ospv$m1[2] - ospv$m2[2]) / (length(unique(DT$GEOID)) * 5 * 4 * .8), 3)
 
 # lets take the precision of just the random effects since the random effects
 # and fixed effects are independent from one another
@@ -24,6 +30,27 @@ b_age_abs <- c(mods$Ratem1pop1$beta, mods$Ratem1pop1$beta + b_age)
 
 MRdraws <- exp(b_age_abs[DT$EDAD + 1] + phidraws)
 DT[,sterror:=apply(MRdraws, 1, sd)]
+DT[YEAR == 2015, POPULATION2:=subset(DT, YEAR == 2014)$POPULATION]
+apply(MRdraws, 2, function(x) x * DT$POPULATION2)
+Ddraws <- apply(MRdraws, 2, function(x) x * DT$POPULATION2)
+Ddraws <- as.data.table(Ddraws)
+Ddraws[,POPULATION:=DT$POPULATION2]
+Ddraws[,EDAD:=DT$EDAD]
+Ddraws[,YEAR:=DT$YEAR]
+
+natdraws <- subset(Ddraws[,lapply(.SD, sum), by=list(EDAD, YEAR)], YEAR >= 2004)
+cols <- names(Ddraws)[grepl("sample", names(Ddraws))]
+natdraws[ , (cols) := lapply(.SD, `/`, POPULATION), .SDcols = cols]
+natdraws[,POPULATION:=NULL]
+natdraws[,EDAD:=NULL]
+natdraws <- natdraws[,lapply(.SD, function(x) 1-prod(1-x)), by=YEAR]
+natdraws[,YEAR:=NULL]
+m_ <- round(apply(as.matrix(natdraws), 1, mean)[nrow(natdraws)], 4)
+l_ <- round(apply(as.matrix(natdraws), 1, quantile, probs=.025)[nrow(natdraws)], 4)
+h_ <- round(apply(as.matrix(natdraws), 1, quantile, probs=.975)[nrow(natdraws)], 4)
+
+plugs["model_value"] <- paste0(m_, " (", l_, ", ", h_, ")")
+write_plugs(plugs)
 
 jpeg("~/Documents/MXU5MR/analysis/plots/logmortalitymuni.jpg")
 ggplot(DT[YEAR == 2015,], aes(x=EDAD+1, y=log(Ratem1pop1), group=GEOID)) +
