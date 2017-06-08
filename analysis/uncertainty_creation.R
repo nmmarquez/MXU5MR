@@ -63,13 +63,21 @@ natdraws[ , (cols) := lapply(.SD, `/`, POPULATION), .SDcols = cols]
 natdraws[,POPULATION:=NULL]
 natdraws[,EDAD:=NULL]
 natdraws <- natdraws[,lapply(.SD, function(x) 1-prod(1-x)), by=YEAR]
+natdraws[,m_:=apply(as.matrix(subset(natdraws, select=cols)), 1, mean)]
+natdraws[,l_:=apply(as.matrix(subset(natdraws, select=cols)), 1, quantile, probs=.025)]
+natdraws[,h_:=apply(as.matrix(subset(natdraws, select=cols)), 1, quantile, probs=.975)]
+
+ggplot(natdraws, aes(x=YEAR, y=m_)) + geom_line() + 
+    geom_ribbon(aes(x=YEAR, ymin=l_, ymax=h_), alpha=.25) + 
+    labs(x="Year", y="5Q0", title="5Q0") + 
+    theme(plot.title = element_text(hjust = 0.5))
+
 natdraws[,YEAR:=NULL]
 m_ <- round(apply(as.matrix(natdraws), 1, mean)[nrow(natdraws)], 4)
 l_ <- round(apply(as.matrix(natdraws), 1, quantile, probs=.025)[nrow(natdraws)], 4)
 h_ <- round(apply(as.matrix(natdraws), 1, quantile, probs=.975)[nrow(natdraws)], 4)
 
 plugs["model_value"] <- paste0(m_, " (", l_, ", ", h_, ")")
-write_plugs(plugs)
 
 # 
 plugs["u5mrsd"] <- sd(with(subset(DT, POPULATION2 != 0), DEATHS / POPULATION2))
@@ -83,12 +91,6 @@ ggplot(DT[YEAR == 2015,], aes(x=EDAD+1, y=log(Ratem1pop1), group=GEOID)) +
     theme_set(theme_gray(base_size = 28))
 dev.off()
 
-jpeg("~/Documents/MXU5MR/analysis/plots/poperrors.jpg")
-ggplot(DT[YEAR!=2015], aes(x=POPULATION, y=sterror, color=EDAD, group=EDAD)) + 
-    geom_point(alpha=.4) + labs(x="Population", title="Demographics & error",
-                                y=expression(M[x]~std.~err.), color="Age")
-dev.off()
-
 jpeg("~/Documents/MXU5MR/analysis/plots/logpoperrors.jpg")
 ggplot(DT[YEAR!=2015], aes(x=log(POPULATION+1), y=sterror, color=EDAD, group=EDAD)) + 
     geom_point(alpha=.4) + labs(x="Log Population", title="Demographics & error",
@@ -96,13 +98,13 @@ ggplot(DT[YEAR!=2015], aes(x=log(POPULATION+1), y=sterror, color=EDAD, group=EDA
     theme_set(theme_gray(base_size = 28))
 dev.off()
 
-jpeg("~/Documents/MXU5MR/analysis/plots/morterrors.jpg")
+#jpeg("~/Documents/MXU5MR/analysis/plots/morterrors.jpg")
 ggplot(DT[YEAR!=2015], aes(x=Ratem1pop1, y=sterror, color=log(POPULATION+1), 
                            group=log(POPULATION+1))) + 
     geom_point(alpha=.3) + labs(x=expression(M[x]), title="Demographics & error",
                                 y=expression(M[x]~std.~err.), color="Log Pop") +
     scale_color_gradientn(colors=rainbow(5))
-dev.off()
+#dev.off()
 
 
 
@@ -126,30 +128,52 @@ summary(DF5q0)
 hivals <- apply(q0array, c(2,3), quantile, .99)
 lovals <- apply(q0array, c(2,3), quantile, .01)
 relineq <- hivals / lovals
-apply(relineq, 1, mean)
-apply(relineq, 1, quantile, probs=.975)
-apply(relineq, 1, quantile, probs=.025)
+absineq <- hivals - lovals
+relineqdiff <- relineq[nrow(relineq),] - relineq[1,]
+absineqdiff <- absineq[nrow(absineq),] - absineq[1,]
+
+plugs["relineq"] <- format_uncert(mean(relineq), quantile(relineq, probs=.025),
+                                  quantile(relineq, probs=.975))
+plugs["absineq"] <- format_uncert(mean(absineq), quantile(absineq, probs=.025),
+                                  quantile(absineq, probs=.975))
+
 
 DTineq <- data.table(year=ystart:yend, relineq=apply(relineq, 1, mean),
                      relineqlow=apply(relineq, 1, quantile, probs=.025),
-                     relineqhi=apply(relineq, 1, quantile, probs=.975))
+                     relineqhi=apply(relineq, 1, quantile, probs=.975),
+                     absineq=apply(absineq, 1, mean),
+                     absineqlow=apply(absineq, 1, quantile, probs=.025),
+                     absineqhi=apply(absineq, 1, quantile, probs=.975))
+
+jpeg("~/Documents/MXU5MR/analysis/plots/relineqtimeseries.jpg")
 ggplot(DTineq, aes(x=year, y=relineq)) + geom_line() + 
     geom_ribbon(aes(x=year, ymin=relineqlow, ymax=relineqhi), alpha=.25) + 
-    labs(x="Year", y="Relative Inequality", title="5Q0 Inequality")
-
-ineqDT <- expand.grid(Year=as.factor(c(ystart, yend)), draw=1:1000,
-                      measure=as.factor(c("Relative", "Absolute")))
-ineqDT <- as.data.table(ineqDT)
-ineqDT[,ineq:=c(c(hivals / lovals), c(hivals - lovals))]
-
-1 - mean(apply(hivals / lovals, 2, function(x) x[2] -x[1]) > 0)
-1 - mean(apply(hivals - lovals, 2, function(x) x[2] -x[1]) > 0)
-
-jpeg("~/Documents/MXU5MR/analysis/plots/ineqpars.jpg")
-ggplot(ineqDT, aes(x=ineq, fill=Year, color=Year)) + geom_density(alpha=.5) +
-    labs(x="Inequality Estimate", y="Density", title="Parameter Density") +
-    facet_wrap(~measure, scales="free")
+    labs(x="Year", y="Relative Inequality", title="5Q0 Inequality") + 
+    theme(plot.title = element_text(hjust = 0.5))
 dev.off()
+
+jpeg("~/Documents/MXU5MR/analysis/plots/absineqtimeseries.jpg")
+ggplot(DTineq, aes(x=year, y=absineq)) + geom_line() + 
+    geom_ribbon(aes(x=year, ymin=absineqlow, ymax=absineqhi), alpha=.25) + 
+    labs(x="Year", y="Absolute Inequality", title="5Q0 Inequality") + 
+    theme(plot.title = element_text(hjust = 0.5))
+dev.off()
+
+summary(relineq[16,] - relineq[12,])
+
+#ineqDT <- expand.grid(Year=as.factor(c(ystart, yend)), draw=1:1000,
+#                      measure=as.factor(c("Relative", "Absolute")))
+#ineqDT <- as.data.table(ineqDT)
+#ineqDT[,ineq:=c(c(hivals / lovals), c(hivals - lovals))]
+
+#1 - mean(apply(hivals / lovals, 2, function(x) x[2] -x[1]) > 0)
+#1 - mean(apply(hivals - lovals, 2, function(x) x[2] -x[1]) > 0)
+
+#jpeg("~/Documents/MXU5MR/analysis/plots/ineqpars.jpg")
+#ggplot(ineqDT, aes(x=ineq, fill=Year, color=Year)) + geom_density(alpha=.5) +
+#    labs(x="Inequality Estimate", y="Density", title="Parameter Density") +
+#    facet_wrap(~measure, scales="free")
+#dev.off()
 
 graph <- poly2adjmat(mx.sp.df)
 DT[,neigh:=rep(rowSums(graph), length(unique(DT$EDAD))*length(unique(DT$YEAR)))]
@@ -159,17 +183,27 @@ DT[,edgea:=EDAD == 0]
 
 lm_var <- lm(sterror ~ Ratem1pop1 * log(POPULATION+1) * EDAD * neigh,
              data=DT[YEAR!=2015])
-summary(lm_var)
-anovasd <- anova(lm_var)
-varexpl <- anovasd$`Sum Sq` / sum(anovasd$`Sum Sq`)
-names(varexpl) <- row.names(anovasd)
-print(varexpl * 100)
-print(summary(lm_var))
-print(anovasd)
+lm_var2 <- lm(sterror ~ Ratem1pop1 * log(POPULATION+1), data=DT[YEAR!=2015])
 
-sum(varexpl[c("Ratem1pop1", "log(POPULATION + 1)", "Ratem1pop1:log(POPULATION + 1)")])
+plugs["lmr2"] <- round(summary(lm_var)$r.squared, 4)
+plugs["lmr2sub"] <- round(summary(lm_var2)$r.squared, 4)
+plugs["abineq"] <- plugs[["absineq"]]
+
+
+plugs["hi2015"] <- round(max(DF5q0[YEAR==2015, fqz]), 4)
+plugs["lo2015"] <- round(min(DF5q0[YEAR==2015, fqz]), 4)
+plugs["mean_time"] <- ".6"
+plugs["sd_time"] <- ".4"
+plugs["chiapas_hi_reg"] <- "2.8"
+plugs["rezmoransi"] <- "(p < .01)"
+plugs["ttrmoransi"] <- "(p < .01)"
+plugs["kfold"] <- "10"
+plugs["kpercent"] <- "20%"
+plugs["n_u5_deaths"] <- "PLUG ME"
 
 mean(apply(q0array[,4,], 1, mean) < .016)
 mean(apply(q0array[,4,], 1, quantile, probs=.95) < .016)
 sort(table(substring(sprintf("%05d", unique(DT$GEOID)),1,2)[which(apply(q0array[,4,], 1, quantile, probs=.95) < .016)]))
 sort(table(substring(sprintf("%05d", unique(DT$GEOID)),1,2)))
+
+write_plugs(plugs)

@@ -4,6 +4,7 @@
 ################################################################################
 rm(list=ls())
 pacman::p_load(foreign, data.table, ggplot2, INSP, dplyr, plotly, sp, spdep, leaflet, rgdal)
+source("~/Documents/MXU5MR/utilities/utilities.R")
 
 ### 1) load in the data
 data_home <- "~/Documents/MXU5MR/nacimientos/data/inegi/"
@@ -15,7 +16,7 @@ var_names <- c("SEXO", "ANO_REG", "ANO_NAC", "ENT_RESID", "MUN_RESID",
                "ENT_REGIS", "MUN_REGIS")
 births <- rbindlist(lapply(fpaths, function(x)
     subset(read.dbf(x, as.is=TRUE), select=var_names)))
-births <- subset(births, ANO_NAC <= 2015 & ANO_NAC >= 2000)
+births <- subset(births, ANO_NAC <= 2015 & ANO_NAC >= 1995)
 
 births[,ENT_REGIS:=sprintf("%02d", as.integer(ENT_REGIS))]
 births[,ENT_RESID:=sprintf("%02d", as.integer(ENT_RESID))]
@@ -24,6 +25,11 @@ births[,MUN_RESID:=sprintf("%03d", as.integer(MUN_RESID))]
 births[,REGIS_DIFF:=ANO_REG != ANO_NAC]
 births[,REGIS_DIFFN:=ANO_REG - ANO_NAC]
 births[,GEOID:=paste0(ENT_RESID, MUN_RESID)]
+
+plugs <- list(number_of_birth_records=nrow(births),
+              muni_birthp=paste0(round(100 * nrow(births[MUN_RESID != "999",]) / nrow(births), 2), "%"))
+
+write_plugs(plugs)
 
 ### graph some of teh anomilies in the data
 # 1) for a given year of data what are the years of births

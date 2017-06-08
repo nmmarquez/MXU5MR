@@ -4,6 +4,7 @@
 ################################################################################
 rm(list=ls())
 pacman::p_load(foreign, data.table, ggplot2, INSP, dplyr, plotly)
+source("~/Documents/MXU5MR/utilities/utilities.R")
 
 ### 1) load in the data
 data_home <- "~/Documents/MXU5MR/defunciones/data/inegi/"
@@ -32,6 +33,14 @@ deaths[EDAD<4000, EDADN:=0]
 deaths[,REGIS_DIFFN:=ANIO_REGIS - ANIO_OCUR]
 deaths <- subset(deaths, ANIO_OCUR <= 2015 & ANIO_OCUR >= 2000)
 deaths <- subset(deaths,  EDADN < 5)
+
+
+plugs <- list(n_u5_deaths=nrow(deaths),
+              p_u5_deaths=paste0(round(100 * nrow(deaths[MUN_RESID != "999",]) / nrow(deaths), 2), "%"))
+
+# write_plugs(plugs)
+nrow(deaths)
+
 
 # create edad2
 deaths[,EDADN2:=EDADN + 1]

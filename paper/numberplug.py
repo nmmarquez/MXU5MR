@@ -39,6 +39,7 @@ def plug_paper():
     f_ = base + "/Documents/MXU5MR/paper/thesisplugged.md"
     string = load_paper()
     keys = get_keys()
+    brackets = ["", ""]
     padded = string.replace('{', '{{').replace('}', '}}')
     substituted = padded.replace(brackets[0], '{').replace(brackets[1], '}')
     formatted = substituted.format(*args, **kwargs)
