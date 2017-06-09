@@ -1,0 +1,15 @@
+---
+title: ''
+output: pdf_document
+---
+\begin{centering}
+
+
+\vspace{6 cm}
+\pagenumbering{gobble}
+\normalsize
+© Copyright 2017
+
+Neal Marquez
+
+\end{centering}

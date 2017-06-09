@@ -9,6 +9,7 @@ output: pdf_document
 University of Washington
 
 \vspace{.75 cm}
+\pagenumbering{gobble}
 
 \Large
 {\bf Abstract}

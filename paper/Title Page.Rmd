@@ -16,7 +16,7 @@ output: pdf_document
 Neal Marquez
 
 \vspace{3 cm}
-
+\pagenumbering{gobble}
 
 \normalsize
 A thesis
