@@ -36,7 +36,8 @@ deaths <- subset(deaths,  EDADN < 5)
 
 
 plugs <- list(n_u5_deaths=nrow(deaths),
-              p_u5_deaths=paste0(round(100 * nrow(deaths[MUN_RESID != "999",]) / nrow(deaths), 2), "%"))
+              p_u5_deaths=paste0(round(100 * nrow(deaths[MUN_RESID != "999",]) / 
+                                           nrow(deaths), 2), "%"))
 
 # write_plugs(plugs)
 nrow(deaths)
