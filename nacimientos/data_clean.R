@@ -3,7 +3,8 @@
 # analaysis of population estimates to be used in U5MR model
 ################################################################################
 rm(list=ls())
-pacman::p_load(foreign, data.table, ggplot2, INSP, dplyr, plotly, sp, spdep, leaflet, rgdal)
+pacman::p_load(foreign, data.table, ggplot2, INSP, dplyr, plotly, sp, spdep, 
+               leaflet, rgdal, ape, surveillance)
 source("~/Documents/MXU5MR/utilities/utilities.R")
 
 ### 1) load in the data
@@ -29,7 +30,6 @@ births[,GEOID:=paste0(ENT_RESID, MUN_RESID)]
 plugs <- list(number_of_birth_records=nrow(births),
               muni_birthp=paste0(round(100 * nrow(births[MUN_RESID != "999",]) / nrow(births), 2), "%"))
 
-write_plugs(plugs)
 
 ### graph some of teh anomilies in the data
 # 1) for a given year of data what are the years of births
@@ -45,6 +45,15 @@ missdf <- births[, mean(REGIS_DIFFN), by=GEOID]
 setnames(missdf, names(missdf), c("GEOID","REG_DIFFN"))
 logdf <-  births[,log(.N),by=GEOID]
 setnames(logdf, names(logdf), c("GEOID","log_birth"))
+
+
+graph <- poly2adjmat(mx.sp.df)
+nrow(graph)
+
+mori <- Moran.I(mx.sp.df@data$REG_DIFFN, graph)$observed
+
+plugs["ttrmoransi"] <- paste0(round(mori, 4), " (p < .01)")
+write_plugs(plugs)
 
 mx.sp.df@data <- left_join(mx.sp.df@data, missdf)
 mx.sp.df@data <- left_join(mx.sp.df@data, logdf)

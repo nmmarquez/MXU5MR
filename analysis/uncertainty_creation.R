@@ -67,10 +67,12 @@ natdraws[,m_:=apply(as.matrix(subset(natdraws, select=cols)), 1, mean)]
 natdraws[,l_:=apply(as.matrix(subset(natdraws, select=cols)), 1, quantile, probs=.025)]
 natdraws[,h_:=apply(as.matrix(subset(natdraws, select=cols)), 1, quantile, probs=.975)]
 
+jpeg("~/Documents/MXU5MR/analysis/plots/nat5q0.jpg")
 ggplot(natdraws, aes(x=YEAR, y=m_)) + geom_line() + 
     geom_ribbon(aes(x=YEAR, ymin=l_, ymax=h_), alpha=.25) + 
-    labs(x="Year", y="5Q0", title="5Q0") + 
+    labs(x="Year", y="5Q0", title="National Estimates of 5Q0") + 
     theme(plot.title = element_text(hjust = 0.5))
+dev.off()
 
 natdraws[,YEAR:=NULL]
 m_ <- round(apply(as.matrix(natdraws), 1, mean)[nrow(natdraws)], 4)
@@ -202,7 +204,11 @@ plugs["kpercent"] <- "20%"
 plugs["n_u5_deaths"] <- "PLUG ME"
 
 mean(apply(q0array[,4,], 1, mean) < .016)
-mean(apply(q0array[,4,], 1, quantile, probs=.95) < .016)
+sum(apply(q0array[,4,], 1, mean) < .016)
+mean(apply(q0array[,4,], 1, quantile, probs=.975) < .016)
+sum(apply(q0array[,4,], 1, quantile, probs=.975) < .016)
+mean(apply(q0array[,4,], 1, quantile, probs=.025) > .016)
+sum(apply(q0array[,4,], 1, quantile, probs=.025) > .016)
 sort(table(substring(sprintf("%05d", unique(DT$GEOID)),1,2)[which(apply(q0array[,4,], 1, quantile, probs=.95) < .016)]))
 sort(table(substring(sprintf("%05d", unique(DT$GEOID)),1,2)))
 
