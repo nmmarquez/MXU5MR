@@ -1,0 +1,47 @@
+---
+output: pdf_document
+---
+
+\begin{centering}
+
+\vspace{3 cm}
+
+\LARGE
+
+{\bf Estimating Under 5 Mortality of Municipalities in Mexico: 2000-2015}
+
+\vspace{1.5 cm}
+
+\Large
+Neal Marquez
+
+\vspace{3 cm}
+
+
+\normalsize
+A thesis
+
+submitted in partial fulfilment of the requirements for the degree of 
+
+Master of Public Health
+
+\vspace{1 cm}
+University of Washington
+
+2017
+
+\vspace{3 cm}
+Committee:
+
+Haidong Wang, Chair
+
+Simon Hay
+
+Rafael lozano
+
+\vspace{2 cm}
+Program Authorized to Offer Degree:
+
+Global Health
+
+\end{centering}

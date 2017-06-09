@@ -1,0 +1,47 @@
+---
+title: ''
+output: pdf_document
+---
+
+\begin{centering}
+
+\normalsize
+University of Washington
+
+\vspace{.75 cm}
+
+\Large
+{\bf Abstract}
+
+\vspace{.5 cm}
+\normalsize
+Estimating Under 5 Mortality of Municipalities in Mexico: 2000-2015
+
+\vspace{.5 cm}
+Neal Marqurz
+
+\vspace{.5 cm}
+Chair of the Supervisory Committee:
+
+Assistant Professor Haidong Wang
+
+Global Health
+
+\end{centering}
+
+\vspace{1.5 cm}
+
+Question: How is Mexico achieving its under 5 mortality goals?
+
+Findings: While National level child mortality rates have been reduced by two-thirds within Mexico between 1990 and 2015, a large amount of inequity in those rates among municipalities.
+
+Meaning: The improving state of health within Mexico has been experienced differentially by municipalities with some locations having mortality rates similar to the national level values reported in 1990. Improving health access to these marginalized municipalities and reducing health inequalities should be a focus of future health planning.
+
+####Importance
+By evaluating child mortality at more granular levels we can begin to assess the state of health disparities that exist within a single country.
+
+####Objective
+To provide estimates of the changing under 5 mortality landscape at the district level between 2006 and 2014 and describe how the distribution of mortality rates among districts has changed over time.
+
+####Design
+Under 5 mortality count data were taken from registrations reported by Subsistema de Información sobre Nacimientos (SINAC) and Instituto Nacional de Estadística y Geografía (INEGI) while population data was calculated from birth record data from each district as reported by INEGI. Mortality counts were estimated from this data using a poisson hierarchical mixed effects regression where the relative risk was used as the mortality rate estimate for a given municipality.
