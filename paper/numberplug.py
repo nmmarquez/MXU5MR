@@ -28,7 +28,7 @@ def rebase_plugs():
     plug_json = base + "/Documents/MXU5MR/paper/plugs.json"
     if os.path.isfile(plug_json):
         with open(plug_json, 'r') as infile:
-            curdata = json.load(in_file)
+            curdata = json.load(infile)
         keys.update(curdata)
     with open(plug_json, 'w') as outfile:
         json.dump(keys, outfile)
