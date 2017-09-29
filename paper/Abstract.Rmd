@@ -9,6 +9,7 @@ output: pdf_document
 University of Washington
 
 \vspace{.75 cm}
+\pagenumbering{gobble}
 
 \Large
 {\bf Abstract}
@@ -18,7 +19,7 @@ University of Washington
 Estimating Under 5 Mortality of Municipalities in Mexico: 2000-2015
 
 \vspace{.5 cm}
-Neal Marqurz
+Neal Marquez
 
 \vspace{.5 cm}
 Chair of the Supervisory Committee:
@@ -31,9 +32,9 @@ Global Health
 
 \vspace{1.5 cm}
 
-Mexico has been had dramatic declines in under 5 mortality from 1990 to 2015 and is one of only a handful of countries that have reached the Millennium Development Goal 4(MDG4) of reducing national level mortality by two thirds from 48 to 16 deaths per 1000 live births. While national level reports of mortality have been made by several international groups and have tracked the changes in Mexico's under  mortality, no study to date has done a comparative assessment of the differential levels of child mortality within Mexeico by municipality. In order to assess how municipalities differ in their under 5 mortality rate and probability of death before age 5,$~_{5}q_{0}$ we calculate age specific mortality rate using spatiotemporal age models. In addition, we assess the difference in time from birth till registration by municipality for all births recorded in the years 2000-2015 in order to assess quality of vital registration.
+Mexico has been had dramatic declines in under 5 mortality from 1990 to 2015 and is one of only a handful of countries that have reached the Millennium Development Goal 4 (MDG4) of reducing national level mortality by two thirds from 48 to 16 deaths per 1000 live births. While national level reports of mortality have been made by several international groups and have tracked the changes in Mexico's under  mortality, no study to date has done a comparative assessment of the differential levels of child mortality within Mexico by municipality. In order to assess how municipalities differ in their under 5 mortality rate and probability of death before age 5 ($~_{5}q_{0}$) we calculate age specific mortality rate using spatiotemporal age models. In addition, we assess the difference in time from birth till registration by municipality for all births recorded in the years 2000-2015 in order to assess quality of vital registration.
 
-Under 5 mortality count data were taken from registrations reported by Subsistema de Información sobre Nacimientos (SINAC) and Instituto Nacional de Estadística y Geografía (INEGI) while population data was calculated from birth record data from each district as reported by INEGI. Mortality counts were estimated from this data using a poisson hierarchical spatiotemporal age regression where the relative risk was used as the mortality rate estimate for a given municipality. 
+Under 5 mortality count data were taken from registrations reported by Subsistema de Información sobre Nacimientos (SINAC) and Instituto Nacional de Estadística y Geografía (INEGI) while population data was calculated from birth record data from each district as reported by INEGI. Mortality counts were estimated from this data using a poisson hierarchical spatiotemporal age regression where the relative risk was used as the mortality rate estimate for a given municipality.
 
 We found that estimates of under 5 mortality are largely improved by the use of spatiotemporal age models. Despite making large strides in improving national level under 5 mortality, many municipalities have not hit the national rate of less than 16 deaths per 1000 live births, with some municipalities having values averaging above the 1990 reference value for the MDG4 target. We also found large differences by municipality in the time from birth to registration as well as significant spatial patterning in these delays that likely bias estimates such that they show less mortality than there actually is within the country.
 
