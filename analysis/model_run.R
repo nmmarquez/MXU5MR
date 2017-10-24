@@ -17,13 +17,14 @@ year <- sort(unique(demog$YEAR))
 # create data table with all combinations of geoid, age, and year
 DT <- as.data.table(expand.grid(GEOID=geoid, EDAD=age, YEAR=year))
 DT <- as.data.table(left_join(DT, demog))
+DT <- subset(DT, YEAR >= 2000)
 DT[,POPULATION2:=POPULATION]
 DT[is.na(POPULATION), POPULATION:=0]
-DT[YEAR == 2015, POPULATION:=0]
+DT[YEAR == 2015 & EDAD == 0, POPULATION:=0] # data is not complete for 2015 births
 DT[is.na(POPULATION2), POPULATION2:=0]
 DT[is.na(DEATHS), DEATHS:=0]
-summary(DT$DEATHS > DT$POPULATION)
-summary(DT$DEATHS > DT$POPULATION2)
+nrow(DT[DEATHS > POPULATION& YEAR != 2015 & EDAD != 0,])
+#summary(DT$DEATHS > DT$POPULATION2)
 
 ### build spde
 INLA:::inla.dynload.workaround()
@@ -38,9 +39,9 @@ all(mesh$idx$loc[1:(N_l -1)] + 1 == mesh$idx$loc[2:N_l])
 setwd("~/Documents/MXU5MR/analysis/")
 
 model <- "u5mr"
-#if (file.exists(paste0(model, ".so"))) file.remove(paste0(model, ".so"))
-#if (file.exists(paste0(model, ".o"))) file.remove(paste0(model, ".o"))
-#if (file.exists(paste0(model, ".dll"))) file.remove(paste0(model, ".dll"))
+if (file.exists(paste0(model, ".so"))) file.remove(paste0(model, ".so"))
+if (file.exists(paste0(model, ".o"))) file.remove(paste0(model, ".o"))
+if (file.exists(paste0(model, ".dll"))) file.remove(paste0(model, ".dll"))
 compile(paste0(model, ".cpp"))
 
 model_run <- function(pinsamp=1, verbose=FALSE, option=1, seed=123, pop=1:2){
@@ -56,12 +57,13 @@ model_run <- function(pinsamp=1, verbose=FALSE, option=1, seed=123, pop=1:2){
                  lik=array(rbinom(nrow(DT), 1, pinsamp), dim=dim_len),
                  G0=spde$param.inla$M0, G1=spde$param.inla$M1, 
                  G2=spde$param.inla$M2)
-    Params <- list(phi=array(0, dim=dim_len_phi), log_sigma=c(0, 0),
+    Params <- list(phi=array(0, dim=dim_len_phi), #log_sigma=c(0, 0),
                    logit_rho=c(0, 0), beta=0, beta_age=rep(0, length(age)-1),
                    spparams=c(0, 0))
     dyn.load(dynlib(model))
     Obj <- MakeADFun(data=Data, parameters=Params, DLL=model, random="phi",
                      silent=!verbose)
+    #runSymbolicAnalysis(Obj)
     Obj$env$tracemgc <- verbose
     Obj$env$inner.control$trace <- verbose
     print(system.time(Opt <- nlminb(start=Obj$par, objective=Obj$fn, 

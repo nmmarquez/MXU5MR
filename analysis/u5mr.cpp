@@ -57,7 +57,7 @@ Type objective_function<Type>::operator() (){
     printf("%s\n", "Data loaded");
     
     PARAMETER_ARRAY(phi);
-    PARAMETER_VECTOR(log_sigma);
+    //PARAMETER_VECTOR(log_sigma);
     PARAMETER_VECTOR(logit_rho);
     PARAMETER_VECTOR(spparams);
     PARAMETER(beta);
@@ -65,7 +65,7 @@ Type objective_function<Type>::operator() (){
     printf("%s\n", "Parameters set.");
     
     printf("%s\n", "Transform parameters.");
-    vector<Type> sigma = exp(log_sigma);
+    //vector<Type> sigma = exp(log_sigma);
     vector<Type> rho = Type(1.) / (Type(1.) + exp(Type(-1.) * logit_rho));
     
     
@@ -78,7 +78,7 @@ Type objective_function<Type>::operator() (){
     vector<Type> nll(2);
     nll[0] = Type(0);
     nll[1] = Type(0);
-    max_parallel_regions = omp_get_max_threads(); 
+    //max_parallel_regions = omp_get_max_threads(); 
     
     // Probability of random effects
     printf("%s\n", "Build precision matrix.");
@@ -99,15 +99,15 @@ Type objective_function<Type>::operator() (){
         Range = sqrt(8) / exp(spparams[0]);
         Q_loc = spkappa4*G0 + Type(2.0)*spkappa2*G1 + G2;
     }
-    SparseMatrix<Type> Q_age = ar_Q(A, rho[0], sigma[0]);
-    SparseMatrix<Type> Q_time = ar_Q(T, rho[1], sigma[1]);
+    SparseMatrix<Type> Q_age = ar_Q(A, rho[0], Type(1.));
+    SparseMatrix<Type> Q_time = ar_Q(T, rho[1], Type(1.));
     
     printf("%s\n", "Eval RE likelihood.");
     if(option == 1){
-        PARALLEL_REGION nll[0] += SEPARABLE(GMRF(Q_time), SEPARABLE(GMRF(Q_age), GMRF(Q_loc)))(phi);
+        nll[0] += SEPARABLE(GMRF(Q_time), SEPARABLE(GMRF(Q_age), GMRF(Q_loc)))(phi);
     }
     if(option == 2){
-        PARALLEL_REGION nll[0] += SEPARABLE(GMRF(Q_time), SEPARABLE(GMRF(Q_age), SCALE(GMRF(Q_loc), spsigma)))(phi);
+        nll[0] += SEPARABLE(GMRF(Q_time), SEPARABLE(GMRF(Q_age), SCALE(GMRF(Q_loc), spsigma)))(phi);
     }
     
     printf("%s\n", "Make estimates.");
@@ -133,11 +133,11 @@ Type objective_function<Type>::operator() (){
             for (int t = 0; t < T; t++) {
                 for (int o = 0; o < O; o++) {
                     if (offset(l,a,t,o) != Type(0.) & lik(l,a,t) != Type(0.)){
-                        PARALLEL_REGION nll[0] -= dpois(yobs(l,a,t), RR(l,a,t) *
+                        nll[0] -= dpois(yobs(l,a,t), RR(l,a,t) *
                             offset(l,a,t,o), true);
                     }
                     if (offset(l,a,t,o) != Type(0.) & lik(l,a,t) == Type(0.)){
-                        PARALLEL_REGION nll[1] -= dpois(yobs(l,a,t), RR(l,a,t) * 
+                        nll[1] -= dpois(yobs(l,a,t), RR(l,a,t) * 
                             offset(l,a,t,o), true);
                     }
                 }
@@ -146,7 +146,7 @@ Type objective_function<Type>::operator() (){
     }
     
     printf("%s\n", "Report values.");
-    REPORT(sigma);
+    //REPORT(sigma);
     REPORT(rho);
     REPORT(beta);
     REPORT(RR);

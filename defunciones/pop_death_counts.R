@@ -85,7 +85,7 @@ mx.sp.df@data <- left_join(mx.sp.df@data, muni_level)
 ggplot(data=mx.sp.df@data, aes(x=POPAVG, y=DEATHS)) +
     geom_point(alpha=.6, color="maroon4")
 
-head(demog)
+head(subset(demog, YEAR >= 2000))
 hist(log(demog$DEATHS + 1))
 
 #ya_df <- demog[,lapply(list(POPULATION, DEATHS, POPULATION2), sum), by=list(YEAR, EDAD)]

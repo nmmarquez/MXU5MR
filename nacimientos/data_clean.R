@@ -9,16 +9,18 @@ source("~/Documents/MXU5MR/utilities/utilities.R")
 
 ### 1) load in the data
 data_home <- "~/Documents/MXU5MR/nacimientos/data/inegi/"
-years <- as.character(1985:2015)
+years <- as.character(1992:2015)
 abv_year <- sapply(strsplit(years, ""), function(x) paste0(x[3], x[4]))
 #fpaths <- paste0(data_home, "natalidad", years, "/NACIM", abv_year, ".dbf")
-fpaths <- paste0(data_home, "/NACIM", abv_year, ".dbf")
+fpaths <- paste0(data_home, "NACIM", abv_year, ".dbf")
 var_names <- c("SEXO", "ANO_REG", "ANO_NAC", "ENT_RESID", "MUN_RESID",
                "ENT_REGIS", "MUN_REGIS")
 births <- rbindlist(lapply(fpaths, function(x)
     subset(read.dbf(x, as.is=TRUE), select=var_names)))
-births <- subset(births, ANO_NAC <= 2015 & ANO_NAC >= 1995)
 
+births[ANO_REG < 100, ANO_REG:= ANO_REG + 1900]
+births[ANO_NAC < 100, ANO_NAC:= ANO_NAC + 1900]
+births <- subset(births, ANO_NAC <= 2015 & ANO_NAC >= 1995)
 births[,ENT_REGIS:=sprintf("%02d", as.integer(ENT_REGIS))]
 births[,ENT_RESID:=sprintf("%02d", as.integer(ENT_RESID))]
 births[,MUN_REGIS:=sprintf("%03d", as.integer(MUN_REGIS))]
