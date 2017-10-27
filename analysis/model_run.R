@@ -44,11 +44,11 @@ if (file.exists(paste0(model, ".o"))) file.remove(paste0(model, ".o"))
 if (file.exists(paste0(model, ".dll"))) file.remove(paste0(model, ".dll"))
 compile(paste0(model, ".cpp"))
 
-model_run <- function(pinsamp=1, verbose=FALSE, option=1, seed=123, pop=1:2){
+model_run <- function(pinsamp=1, verbose=TRUE, option=1, seed=123, pop=1:2){
     graph <- poly2adjmat(mx.sp.df)
     N_l <- ifelse(option == 1, length(geoid), nrow(spde$param.inla$M1))
-    dim_len <- c(length(geoid), length(age), length(year))
-    dim_len_phi <- c(N_l, length(age), length(year))
+    dim_len <- c(length(geoid), length(age), length(unique(DT$YEAR)))
+    dim_len_phi <- c(N_l, length(age), length(unique(DT$YEAR)))
     set.seed(seed)
     Data <- list(yobs=array(DT$DEATHS, dim=dim_len), option=option, 
                  offset=array(c(DT$POPULATION, DT$POPULATION2), 
@@ -63,7 +63,7 @@ model_run <- function(pinsamp=1, verbose=FALSE, option=1, seed=123, pop=1:2){
     dyn.load(dynlib(model))
     Obj <- MakeADFun(data=Data, parameters=Params, DLL=model, random="phi",
                      silent=!verbose)
-    #runSymbolicAnalysis(Obj)
+    runSymbolicAnalysis(Obj)
     Obj$env$tracemgc <- verbose
     Obj$env$inner.control$trace <- verbose
     print(system.time(Opt <- nlminb(start=Obj$par, objective=Obj$fn, 
@@ -73,7 +73,7 @@ model_run <- function(pinsamp=1, verbose=FALSE, option=1, seed=123, pop=1:2){
     # 1128.412   10.468 1140.782 
     Report <- Obj$report()
     Report$convergence <- Opt$convergence
-    sdrep <- sdreport(Obj, getJointPrecision = T)
+    sdrep <- sdreport(Obj, getJointPrecision=T)
     Report$par.vals <- c(sdrep$par.fixed, sdrep$par.random)
     Report$prec <- sdrep$jointPrecision
     dyn.unload(dynlib(model))
@@ -90,7 +90,6 @@ mods <- list(Ratem1pop1=model_run(pinsamp=1., option=1, pop=1))
 DT[,Ratem1pop1:=c(mods$Ratem1pop1$RR)]
 DT[,Ratem1pop2:=c(mods$Ratem1pop1$RR)]
 DT[,Ratem1:=c(mods$Ratem1pop1$RR)]
-
 
 save(mods, file="~/Documents/MXU5MR/analysis/outputs/model_covs_full.Rdata")
 fwrite(DT, "~/Documents/MXU5MR/analysis/outputs/model_phi_full.csv")

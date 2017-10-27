@@ -57,7 +57,7 @@ Ddraws[,POPULATION:=DT$POPULATION2]
 Ddraws[,EDAD:=DT$EDAD]
 Ddraws[,YEAR:=DT$YEAR]
 
-natdraws <- subset(Ddraws[,lapply(.SD, sum), by=list(EDAD, YEAR)], YEAR >= 2004)
+natdraws <- Ddraws[,lapply(.SD, sum), by=list(EDAD, YEAR)]
 cols <- names(Ddraws)[grepl("sample", names(Ddraws))]
 natdraws[ , (cols) := lapply(.SD, `/`, POPULATION), .SDcols = cols]
 natdraws[,POPULATION:=NULL]
