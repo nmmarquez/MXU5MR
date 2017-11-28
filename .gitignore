@@ -22,3 +22,13 @@
 *.docx
 *.csl
 *.json
+*.log
+*.aux
+*.fls
+*.gz
+*.fdb_latexmk
+*.pdf
+*.bbl
+*.blg
+*.ps
+

@@ -49,8 +49,11 @@ b_age_abs <- c(mods$Ratem1pop1$beta, mods$Ratem1pop1$beta + b_age)
 
 MRdraws <- exp(b_age_abs[DT$EDAD + 1] + phidraws)
 DT[,sterror:=apply(MRdraws, 1, sd)]
-DT[YEAR == 2015, POPULATION2:=subset(DT, YEAR == 2014)$POPULATION]
-apply(MRdraws, 2, function(x) x * DT$POPULATION2)
+DT[,lwr:=apply(MRdraws, 1, function(x) quantile(x, probs=.025))]
+DT[,upr:=apply(MRdraws, 1, function(x) quantile(x, probs=.975))]
+DT[YEAR == 2015 & EDAD == 0, 
+   POPULATION2:=subset(DT, YEAR == 2014 & EDAD==0)$POPULATION]
+
 Ddraws <- apply(MRdraws, 2, function(x) x * DT$POPULATION2)
 Ddraws <- as.data.table(Ddraws)
 Ddraws[,POPULATION:=DT$POPULATION2]
@@ -100,13 +103,13 @@ ggplot(DT[YEAR!=2015], aes(x=log(POPULATION+1), y=sterror, color=EDAD, group=EDA
     theme_set(theme_gray(base_size = 28))
 dev.off()
 
-#jpeg("~/Documents/MXU5MR/analysis/plots/morterrors.jpg")
+jpeg("~/Documents/MXU5MR/analysis/plots/morterrors.jpg")
 ggplot(DT[YEAR!=2015], aes(x=Ratem1pop1, y=sterror, color=log(POPULATION+1), 
                            group=log(POPULATION+1))) + 
     geom_point(alpha=.3) + labs(x=expression(M[x]), title="Demographics & error",
                                 y=expression(M[x]~std.~err.), color="Log Pop") +
     scale_color_gradientn(colors=rainbow(5))
-#dev.off()
+dev.off()
 
 
 
@@ -213,3 +216,51 @@ sort(table(substring(sprintf("%05d", unique(DT$GEOID)),1,2)[which(apply(q0array[
 sort(table(substring(sprintf("%05d", unique(DT$GEOID)),1,2)))
 
 write_plugs(plugs)
+DF5q0 %>% filter(YEAR == 2000 | YEAR == 2015) %>%
+    mutate(YEAR=as.factor(YEAR)) %>%
+    ggplot(aes(x=fqz, group=YEAR, fill=YEAR, alpha=.5)) +
+    geom_density() + 
+    scale_alpha(guide=FALSE) + 
+    labs(x="5q0", title="5q0 Density across Municipalities")
+
+for(i in 2000:2015){
+    plot_i <- DF5q0 %>% filter(YEAR == i) %>%
+        mutate(YEAR=as.factor(YEAR)) %>%
+        ggplot(aes(x=fqz, group=YEAR, fill=YEAR, alpha=.5)) +
+        geom_density() + 
+        scale_alpha(guide=FALSE) + 
+        labs(x="5q0", title="5q0 Density across Municipalities") + 
+        lims(x=c(0, .1), y=c(0, 95))
+    print(plot_i)
+}
+
+DF5q0_diff <- DF5q0 %>% filter(YEAR == 2000 | YEAR == 2015) %>% 
+    group_by(GEOID) %>% summarise(fqz_diff=nth(fqz, 1) - nth(fqz, 2)) %>%
+    arrange(fqz_diff)
+    
+DF5q0_diff %>% ggplot(aes(x=fqz_diff, fill=1, alpha=.5)) +
+    geom_density() + 
+    scale_alpha(guide=FALSE) + scale_fill_continuous(guide=FALSE) + 
+    labs(x="5q0 Change over 15 years", 
+         title="5q0 Change across Municipalities")
+
+DT %>% filter(GEOID %in% head(DF5q0_diff$GEOID, 9)) %>%
+    ggplot(aes(x=YEAR, y=log(Ratem1), group=EDAD, color=EDAD, fill=EDAD,
+               ymin=log(lwr), ymax=log(upr))) + 
+    geom_line() + geom_ribbon(alpha=.3) + facet_wrap(~GEOID)
+
+DT %>% filter(GEOID %in% tail(DF5q0_diff$GEOID, 9)) %>%
+    ggplot(aes(x=YEAR, y=log(Ratem1), group=EDAD, color=EDAD, fill=EDAD,
+               ymin=log(lwr), ymax=log(upr))) + 
+    geom_line() + geom_ribbon(alpha=.3) + facet_wrap(~GEOID)
+
+DF5q0 %>% filter(GEOID %in% head(DF5q0_diff$GEOID, 9)) %>%
+    ggplot(aes(x=YEAR, y=fqz, ymin=fqzl, ymax=fqzh)) + 
+    geom_line() + geom_ribbon(alpha=.3) + facet_wrap(~GEOID)
+
+DF5q0 %>% filter(GEOID %in% tail(DF5q0_diff$GEOID, 9)) %>%
+    ggplot(aes(x=YEAR, y=fqz, ymin=fqzl, ymax=fqzh)) + 
+    geom_line() + geom_ribbon(alpha=.3) + facet_wrap(~GEOID)
+
+save(MRarray, MRdraws, DF5q0, DF5q0_diff, q0array, Ddraws, 
+     file="~/Documents/MXU5MR/analysis/outputs/uncertainty_draws.Rdata")
