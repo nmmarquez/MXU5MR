@@ -48,11 +48,11 @@
 % The widths of these boxes can be easily edited to accommodate your content as you see fit
 
 \begin{minipage}[b]{0.67\linewidth}
-\veryHuge \color{Crimson} \textbf{[Your CSDE Poster Main Title That Can Be Really Long, or Really Short]} \color{Black}\\ % Title
-\Huge\textit{[Subtitle: It's up to you]}\\[2cm] % Subtitle
-\huge \textbf{[Author - Department]}\\[0.5cm] % Author(s)
+\veryHuge \color{Crimson} \textbf{Under 5 Mortality Estimates For Mexico's ~~~~~~Municipalities: 2000-2015} \color{Black}\\ % Title
+\Huge\textit{Estimating Small Area Changes in Child Mortality over Time in Mexico}\\[2cm] % Subtitle
+\huge \textbf{Neal Marquez - Sociology}\\[0.5cm] % Author(s)
 \huge University of Washington\\[0.4cm] % University/organization
-\Large email@uw.edu\\
+\Large nmarquez@uw.edu\\
 \end{minipage}
 %
 \begin{minipage}[b]{0.33\linewidth}
@@ -166,53 +166,28 @@ and $Q^l$ follows either a LCAR or 2D Matern specification. This will give us ou
 
 \section*{Results}
 
-Donec faucibus purus at tortor egestas eu fermentum dolor facilisis. Maecenas tempor dui eu neque fringilla rutrum. Mauris \emph{lobortis} nisl accumsan. Aenean vitae risus ante.
+Analysis of time from birth until registration showed that there was a significant amount of variability in the distribution of births at each municipality with a mean time of .6  and a standard deviation of .4. In addition to this variability there was a strong geographic correlation between the time delay of births until time to registration with a Moran's I of .7661 (p $<$ .01) indicative of strong positive geographic autocorrelation(figure 1).
 %
-\begin{wraptable}{l}{12cm} % Left or right alignment is specified in the first bracket, the width of the table is in the second
-\begin{tabular}{l l l}
-\toprule
-\textbf{Treatments} & \textbf{Response 1} & \textbf{Response 2}\\
-\midrule
-Treatment 1 & 0.0003262 & 0.562 \\
-Treatment 2 & 0.0015681 & 0.910 \\
-Treatment 3 & 0.0009271 & 0.296 \\
-\bottomrule
-\end{tabular}
-\captionof{table}{\color{Green} Table caption}
-\end{wraptable}
+\begin{wrapfigure}{l}{12cm} % Left or right alignment is specified in the first bracket, the width of the table is in the second
+\includegraphics{/home/nyanyan/Documents/MXU5MR/analysis/plots/regisdiff.png}
+\captionof{figure}{\color{Green} Difference in Registration Time}
+\end{wrapfigure}
 %
-Phasellus imperdiet, tortor vitae congue bibendum, felis enim sagittis lorem, et volutpat ante orci sagittis mi. Morbi rutrum laoreet semper. Morbi accumsan enim nec tortor consectetur non commodo nisi sollicitudin. Proin sollicitudin. Pellentesque eget orci eros. Fusce ultricies, tellus et pellentesque fringilla, ante massa luctus libero, quis tristique purus urna nec nibh.
 
-Nulla ut porttitor enim. Suspendisse venenatis dui eget eros gravida tempor. Mauris feugiat elit et augue placerat ultrices. Morbi accumsan enim nec tortor consectetur non commodo. Pellentesque condimentum dui. Etiam sagittis purus non tellus tempor volutpat. Donec et dui non massa tristique adipiscing. Quisque vestibulum eros eu. Phasellus imperdiet, tortor vitae congue bibendum, felis enim sagittis lorem, et volutpat ante orci sagittis mi. Morbi rutrum laoreet semper. Morbi accumsan enim nec tortor consectetur non commodo nisi sollicitudin.
+Though this study was the first to estimate under 5 mortality and$~_5q_{0}$ at the municipality level within Mexico, we further assessed our results by comparing the aggregated estimates of$~_5q_{0}$ against the reported values of other major institutions. The estimated values of$~_5q_{0}$ for the aggregated 2015 national levels, 0.015 (0.0141, 0.0158), were found to be similar to both United Nations estimate of .0132 and the Institute for Health Metrics and Evaluation .0154 (.0117-.0200) and these similarities held true for the entire time series of data. Our analysis showed that there has been a considerable drop in child mortality in Mexico, as measured here by$~_5q_{0}$, (figure 2) which is in agreement with the previous literature on the topic.
 
-\begin{center}\vspace{1cm}
-\includegraphics[width=0.4\linewidth]{/home/nyanyan/Documents/MXU5MR/analysis/plots/regisdiff.png}
-\captionof{figure}{\color{Green} Figure caption}
-\end{center}\vspace{1cm}
+%
+\begin{center}\vspace{2cm}
+\includegraphics[width=1.5\linewidth]{/home/nyanyan/Documents/MXU5MR/analysis/plots/compare5q0natmuni.jpg}
+\captionof{figure}{\color{Green} Temporal Change in$~_5q_0$}
+\end{center}\vspace{2cm}
+%
 
-In hac habitasse platea dictumst. Etiam placerat, risus ac.
+\text{}
 
-Adipiscing lectus in magna blandit:
+This analysis showed significant spatial correlation of under 5 mortality rates, indicative of spatial stratification of health outcomes that have been observed in other research. This spatiotemporal hetrogeneity of health outcomes is not only visible in cross sections of our study, but is also visible in the change over time of age specific mortality and  of$~_5q_{0}$.
 
-\begin{center}\vspace{1cm}
-\begin{tabular}{l l l l}
-\toprule
-\textbf{Treatments} & \textbf{Response 1} & \textbf{Response 2} \\
-\midrule
-Treatment 1 & 0.0003262 & 0.562 \\
-Treatment 2 & 0.0015681 & 0.910 \\
-Treatment 3 & 0.0009271 & 0.296 \\
-\bottomrule
-\end{tabular}
-\captionof{table}{\color{Green} Table caption}
-\end{center}\vspace{1cm}
-
-Vivamus sed nibh ac metus tristique tristique a vitae ante. Sed lobortis mi ut arcu fringilla et adipiscing ligula rutrum. Aenean turpis velit, placerat eget tincidunt nec, ornare in nisl. In placerat.
-
-\begin{center}\vspace{1cm}
-\includegraphics[width=0.8\linewidth]{placeholder}
-\captionof{figure}{\color{Green} Figure caption}
-\end{center}\vspace{1cm}
+Furthermore, this analysis is the first of our knowledge to examine measures of equality in child demographic health outcomes, such as age specific mortality or$~_5q_{0}$, and highlights that although improvements in child mortality have been made they have been experienced differentially by different municipalities leading to stagnating measures of inequality.
 
 %----------------------------------------------------------------------------------------
 %	CONCLUSIONS
@@ -223,10 +198,10 @@ Vivamus sed nibh ac metus tristique tristique a vitae ante. Sed lobortis mi ut a
 \section*{Conclusions}
 
 \begin{itemize}
-\item Pellentesque eget orci eros. Fusce ultricies, tellus et pellentesque fringilla, ante massa luctus libero, quis tristique purus urna nec nibh. Phasellus fermentum rutrum elementum. Nam quis justo lectus.
-\item Vestibulum sem ante, hendrerit a gravida ac, blandit quis magna.
-\item Donec sem metus, facilisis at condimentum eget, vehicula ut massa. Morbi consequat, diam sed convallis tincidunt, arcu nunc.
-\item Nunc at convallis urna. isus ante. Pellentesque condimentum dui. Etiam sagittis purus non tellus tempor volutpat. Donec et dui non massa tristique adipiscing.
+\item Additional evidence of Mexico's continued improvement in reducing child mortality at national level.
+\item Birth vital registration quality is heterogenous across Mexico and is significantly spatially correlated.
+\item At the municipality level improvements in child mortality are less certain.
+\item Mexico has stagnated in reducing inequality of child mortality in both relative and absolute measures.
 \end{itemize}
 
 \color{DarkSlateGray} % Set the color back to DarkSlateGray for the rest of the content
@@ -237,15 +212,18 @@ Vivamus sed nibh ac metus tristique tristique a vitae ante. Sed lobortis mi ut a
 
 \section*{Forthcoming Research}
 
-Vivamus molestie, risus tempor vehicula mattis, libero arcu volutpat purus, sed blandit sem nibh eget turpis. Maecenas rutrum dui blandit lorem vulputate gravida. Praesent venenatis mi vel lorem tempor at varius diam sagittis. Nam eu leo id turpis interdum luctus a sed augue. Nam tellus.
+Future research will address the differences in quality of vital registration with increased variance of estimates as well as estimate the effect that migration has on mortality parameter estimates.
 
- %----------------------------------------------------------------------------------------
+%----------------------------------------------------------------------------------------
 %	REFERENCES
 %----------------------------------------------------------------------------------------
 
-%\nocite{*} % Print all references regardless of whether they were cited in the poster or not
-\bibliographystyle{plain} % Plain referencing style
-\bibliography{sample} % Use the example bibliography file sample.bib
+\section*{References}
+\begin{itemize}
+\item Wang H, Naghavi M, Allen C et al. Global, regional, and national life expectancy, all-cause mortality, and cause-specific mortality for 249 causes of death, 1980-2015: A systematic analysis for the global burden of disease study 2015. The Lancet 2016; 388: 1459–544
+\item Victora CG, Requejo JH, Barros AJD et al. Countdown to 2015: A decade of tracking progress for maternal, newborn, and child survival. The Lancet 2016; 387: 2049-59.
+\item Dwyer-Lindgren L, Kakungu F, Hangoma P et al. Estimation of district-level under-5 mortality in zambia using birth history data, 1980-2010. Spatial and Spatio-temporal Epidemiology 2014; 11: 89-107
+\end{itemize}
 
 %----------------------------------------------------------------------------------------
 %	ACKNOWLEDGEMENTS
@@ -253,7 +231,7 @@ Vivamus molestie, risus tempor vehicula mattis, libero arcu volutpat purus, sed 
 
 \section*{Acknowledgements}
 
-Etiam fermentum, arcu ut gravida fringilla, dolor arcu laoreet justo, ut imperdiet urna arcu a arcu. Donec nec ante a dui tempus consectetur. Cras nisi turpis, dapibus sit amet mattis sed, laoreet.
+This research would have not been possible without the advice and guidence of the people at Instituto Nacional de Salud Publica, the Institute for Health Metrics and Evaluation, and the Department of Global Health at the University of Washington.
 
 %----------------------------------------------------------------------------------------
 
