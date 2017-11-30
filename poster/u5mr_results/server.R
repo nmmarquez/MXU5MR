@@ -1,10 +1,26 @@
 rm(list=ls())
 
-pacman::p_load(data.table, ggplot2, dplyr, dtplyr, sp, leaflet)
-load("~/Documents/MXU5MR/analysis/outputs/all_level_5q0.Rdata")
+library(shiny)
+library(shinydashboard)
+library(leaflet)
+library(data.table)
+library(sp)
+library(dplyr)
+
+load("./all_level_5q0.Rdata")
 all_level_5q0 <- all_level_5q0 %>%
     mutate(GEOID=sprintf("%05d", GEOID), CVE_ENT=substr(GEOID, 1, 2))
 mx.sp.df@data$CVE_ENT <- as.character(mx.sp.df@data$CVE_ENT)
+
+years <- sort(unique(all_level_5q0$YEAR))
+NameIDDF <- mx.sp.df@data %>% arrange(CVE_ENT, NOM_MUN) %>%
+    select(GEOID, CVE_ENT, NOM_MUN) %>% left_join(DFstate, by="CVE_ENT") %>%
+    mutate(name=paste0(NOM_MUN, ", ", state)) %>% select(name, GEOID)
+
+NameIDDF <- data.frame(name="Nacional", GEOID="0") %>%
+    rbind((DFstate %>% rename("name"="state", "GEOID"="CVE_ENT"))) %>%
+    rbind(NameIDDF) %>%
+    mutate_if(is.factor, as.character)
 
 map_MX_data <- function(state, year, relative_scale){
     if(state != "Nacional"){
@@ -22,8 +38,7 @@ map_MX_data <- function(state, year, relative_scale){
     }
     col <- "fqz"
     df@data$data <- df@data[, col]
-    lab_label <- ifelse(is.null(label), col, label)
-    popup <- paste0("Municipio: ", df@data$NOM_MUN, "<br> 5q0: ", 
+    popup <- paste0("Municipality: ", df@data$NOM_MUN, "<br> 5q0: ", 
                     round(df@data$fqz, 4), "(",
                     round(df@data$fqzl, 4),", ",
                     round(df@data$fqzh, 4), ")")
@@ -43,5 +58,10 @@ map_MX_data <- function(state, year, relative_scale){
     map1
 }
 
-map_MX_data("Aguascalientes", 2000, relative_scale = T)
-DFstate
+shinyServer(function(input,output){
+    
+    output$mapplot <- renderLeaflet({
+        map_MX_data(input$loc, as.integer(input$year), as.logical(input$relative))
+    })
+    
+})

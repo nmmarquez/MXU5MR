@@ -1,7 +1,7 @@
 rm(list=ls())
 
 pacman::p_load(INLA, TMB, data.table, ggplot2, dplyr, dtplyr, ineq, INSP, 
-               surveillance, clusterPower)
+               surveillance, clusterPower, rvest)
 
 setwd("~/Documents/MXU5MR/analysis/outputs/")
 load("./uncertainty_draws.Rdata")
@@ -39,13 +39,6 @@ low_ref <- 21110
 low_ref_name <- mx.sp.df@data[mx.sp.df@data$muni == low_ref, "NOM_MUN"] %>% 
     as.character %>% paste0(", Puebla")
 
-DT %>% filter(GEOID %in% highest2015 & EDAD==0 & YEAR != 2015) %>%
-    ggplot(aes(x=YEAR, y=POPULATION)) + 
-    geom_line() + geom_line() + facet_wrap(~GEOID)
-
-DT %>% filter(EDAD == 0 & YEAR == 2014) %>% select(DEATHS) %>% unlist %>% sum
-
-mx.sp.df@data %>% filter(GEOID %in% sprintf("%05d", highest2015))
 
 natdraws <- Ddraws[,lapply(.SD, sum), by=list(EDAD, YEAR)]
 cols <- names(Ddraws)[grepl("sample", names(Ddraws))]
@@ -59,6 +52,46 @@ natdraws[,l_:=apply(as.matrix(subset(natdraws, select=cols)), 1,
 natdraws[,h_:=apply(as.matrix(subset(natdraws, select=cols)), 1, 
                     quantile, probs=.975)]
 
+state_ids <- DT$GEOID %>% substr(. , 1, nchar(.)-3) %>% as.numeric
+
+samps <- paste0("sample", 1:1000)
+
+state_draws <- Ddraws %>% data.frame %>%
+    mutate(GEOID=state_ids) %>%
+    group_by(GEOID, EDAD, YEAR) %>% summarise_all(sum) %>% ungroup %>%
+    mutate_at(grep("sample", names(.), value=T), function(x) x/.$POPULATION) %>%
+    group_by(GEOID, YEAR) %>% summarise_all(function(x) 1 - prod(1-x)) %>% 
+    select(-POPULATION, -EDAD)
+
+state_draws$fqz <- state_draws[, samps] %>% rowMeans
+state_draws$fqzl <- apply(state_draws[, samps], 1, quantile, probs=.025)
+state_draws$fqzh <- apply(state_draws[, samps], 1, quantile, probs=.975)
+
+state_draws <- state_draws %>% select(GEOID, YEAR, fqzl, fqz, fqzh) %>% ungroup
+
+state_draws %>%
+    ggplot(aes(x=YEAR, y=fqz, ymin=fqzl, ymax=fqzh)) + 
+    geom_line() + geom_ribbon(alpha=.3) + facet_wrap(~GEOID)
+
+DF5q0 %>% filter(GEOID>=10000 & GEOID<11000) %>%
+    ggplot(aes(x=YEAR, y=fqz, ymin=fqzl, ymax=fqzh)) + 
+    geom_line() + geom_ribbon(alpha=.3) + facet_wrap(~GEOID)
+
+all_level_5q0 <- natdraws %>% select(m_, l_, h_, YEAR) %>%
+    rename("fqz"="m_", "fqzl"="l_", "fqzh"="h_") %>% 
+    select(YEAR, fqz, fqzl, fqzh) %>%
+    mutate(GEOID=0) %>% rbind(state_draws) %>% rbind(DF5q0) %>% as.data.frame
+
+# https://github.com/diegovalle/mxmaps/blob/master/data/df_mxstate.RData?raw=true
+load("~/Downloads/df_mxstate.RData")
+
+DFstate <- df_mxstate %>% select(state_name, region) %>% 
+    rename("CVE_ENT"="region", "state"="state_name")
+save(all_level_5q0, mx.sp.df, DFstate, file="all_level_5q0.Rdata")
+
+labs <- c("Nacional", "Nuevo Casas Grandes\nChihuahua", 
+          "Palmar de Bravo\nPuebla")
+
 jpeg("~/Documents/MXU5MR/analysis/plots/compare5q0natmuni.jpg")
 natdraws %>% select(m_, l_, h_, YEAR) %>% 
     rename("fqz"="m_", "fqzl"="l_", "fqzh"="h_") %>% 
@@ -68,7 +101,7 @@ natdraws %>% select(m_, l_, h_, YEAR) %>%
     ggplot(aes(x=YEAR, y=fqz, ymin=fqzl, ymax=fqzh, 
                group=loc, color=loc, fill=loc)) + 
     geom_line() + geom_ribbon(alpha=.3) + 
-    scale_fill_discrete(name="Location") + 
-    scale_color_discrete(name="Location") + 
+    scale_fill_discrete(name="Location", labels=labs) + 
+    scale_color_discrete(name="Location", labels=labs) + 
     labs(y="Year", x="5q0", title="Temporal Change in 5q0")
 dev.off()
