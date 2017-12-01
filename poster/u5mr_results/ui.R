@@ -19,6 +19,7 @@ NameIDDF <- data.frame(name="Nacional", GEOID="0") %>%
     mutate_if(is.factor, as.character)
 
 locs <- subset(NameIDDF, as.numeric(GEOID) < 1000)$name
+locs2 <- NameIDDF$name
 relative <- c(TRUE, FALSE)
 
 
@@ -30,7 +31,8 @@ body <- dashboardBody(
     fluidRow(
         column(width=12,
                tabBox(id='tabvals', width=NULL,
-                      tabPanel('Map', leafletOutput('mapplot'), value=1)
+                      tabPanel('Map', leafletOutput('mapplot'), value=1),
+                      tabPanel('Time Series', plotOutput('time'), value=2)
                )
         ) 
     ),
@@ -44,9 +46,15 @@ body <- dashboardBody(
 
 
 sidebar <- dashboardSidebar(
+    conditionalPanel(condition="input.tabvals==1",
     selectInput('loc', 'Location', locs, selected="Aguascalientes"),
     selectInput('year', 'Year', years, selected=2015),
     selectInput('relative', 'Relative', c(TRUE, FALSE))
+    ),
+    conditionalPanel(condition="input.tabvals==2",
+     selectInput('loc2', 'Location', locs2, selected="Nacional")
+    )
+    
 )
 
 dashboardPage(

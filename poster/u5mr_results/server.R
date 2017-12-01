@@ -2,6 +2,7 @@ rm(list=ls())
 
 library(shiny)
 library(shinydashboard)
+library(ggplot2)
 library(leaflet)
 library(data.table)
 library(sp)
@@ -62,6 +63,13 @@ shinyServer(function(input,output){
     
     output$mapplot <- renderLeaflet({
         map_MX_data(input$loc, as.integer(input$year), as.logical(input$relative))
+    })
+    
+    output$time <- renderPlot({
+        ID <- subset(NameIDDF, name==input$loc2)$GEOID
+        all_level_5q0 %>% filter(GEOID == sprintf("%05d", as.numeric(ID))) %>%
+            ggplot(aes(x=YEAR, y=fqz, ymin=fqzl, ymax=fqzh)) + 
+                geom_line() + geom_ribbon(alpha=.3)
     })
     
 })
