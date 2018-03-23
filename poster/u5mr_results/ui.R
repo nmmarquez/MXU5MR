@@ -52,7 +52,7 @@ sidebar <- dashboardSidebar(
     selectInput('relative', 'Relative', c(TRUE, FALSE))
     ),
     conditionalPanel(condition="input.tabvals==2",
-     selectInput('loc2', 'Location', locs2, selected="Nacional")
+     selectInput('loc2', 'Location', locs2, selected="Nacional", multiple=TRUE)
     )
     
 )

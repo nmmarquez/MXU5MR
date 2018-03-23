@@ -9,7 +9,7 @@ source("~/Documents/MXU5MR/utilities/utilities.R")
 
 ### 1) load in the data
 data_home <- "~/Documents/MXU5MR/nacimientos/data/inegi/"
-years <- as.character(1992:2015)
+years <- as.character(1992:2016)
 abv_year <- sapply(strsplit(years, ""), function(x) paste0(x[3], x[4]))
 #fpaths <- paste0(data_home, "natalidad", years, "/NACIM", abv_year, ".dbf")
 fpaths <- paste0(data_home, "NACIM", abv_year, ".dbf")
@@ -52,7 +52,7 @@ setnames(logdf, names(logdf), c("GEOID","log_birth"))
 graph <- poly2adjmat(mx.sp.df)
 nrow(graph)
 
-mori <- Moran.I(mx.sp.df@data$REG_DIFFN, graph)$observed
+mori <- Moran.I((mx.sp.df@data %>% left_join(missdf))$REG_DIFFN, graph)$observed
 
 plugs["ttrmoransi"] <- paste0(round(mori, 4), " (p < .01)")
 write_plugs(plugs)

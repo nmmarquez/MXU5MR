@@ -21,7 +21,8 @@ NameIDDF <- mx.sp.df@data %>% arrange(CVE_ENT, NOM_MUN) %>%
 NameIDDF <- data.frame(name="Nacional", GEOID="0") %>%
     rbind((DFstate %>% rename("name"="state", "GEOID"="CVE_ENT"))) %>%
     rbind(NameIDDF) %>%
-    mutate_if(is.factor, as.character)
+    mutate_if(is.factor, as.character) %>%
+    mutate(GEOID=sprintf("%05d", as.numeric(GEOID)))
 
 map_MX_data <- function(state, year, relative_scale){
     if(state != "Nacional"){
@@ -66,9 +67,12 @@ shinyServer(function(input,output){
     })
     
     output$time <- renderPlot({
-        ID <- subset(NameIDDF, name==input$loc2)$GEOID
-        all_level_5q0 %>% filter(GEOID == sprintf("%05d", as.numeric(ID))) %>%
-            ggplot(aes(x=YEAR, y=fqz, ymin=fqzl, ymax=fqzh)) + 
+        ID <- subset(NameIDDF, name %in% input$loc2)$GEOID
+        all_level_5q0 %>% 
+            filter(GEOID %in% ID) %>%
+            left_join(NameIDDF, by="GEOID") %>%
+            ggplot(aes(x=YEAR, y=fqz, ymin=fqzl, ymax=fqzh, 
+                       color=name, group=name, fill=name)) + 
                 geom_line() + geom_ribbon(alpha=.3)
     })
     

@@ -20,11 +20,13 @@ DT <- as.data.table(left_join(DT, demog))
 DT <- subset(DT, YEAR >= 2000)
 DT[,POPULATION2:=POPULATION]
 DT[is.na(POPULATION), POPULATION:=0]
-DT[YEAR == 2015 & EDAD == 0, POPULATION:=0] # data is not complete for 2015 births
+#DT[YEAR == 2015 & EDAD == 0, POPULATION:=0] # data is not complete for 2015 births
 DT[is.na(POPULATION2), POPULATION2:=0]
 DT[is.na(DEATHS), DEATHS:=0]
-nrow(DT[DEATHS > POPULATION& YEAR != 2015 & EDAD != 0,])
+nrow(DT[DEATHS > POPULATION,])
 #summary(DT$DEATHS > DT$POPULATION2)
+
+#DT[,list(D=sum(DEATHS)), by=YEAR]
 
 ### build spde
 INLA:::inla.dynload.workaround()
@@ -50,8 +52,8 @@ model_run <- function(pinsamp=1, verbose=TRUE, option=1, seed=123, pop=1:2){
     dim_len <- c(length(geoid), length(age), length(unique(DT$YEAR)))
     dim_len_phi <- c(N_l, length(age), length(unique(DT$YEAR)))
     set.seed(seed)
-    Data <- list(yobs=array(DT$DEATHS, dim=dim_len), option=option, 
-                 offset=array(c(DT$POPULATION, DT$POPULATION2), 
+    Data <- list(yobs=array(DT$DEATHS, dim=dim_len), option=option,
+                 offset=array(c(DT$POPULATION, DT$POPULATION2),
                               dim=c(dim_len, 2))[,,,pop,drop=FALSE],
                  Wstar=Matrix(diag(rowSums(graph)) - graph, sparse=T),
                  lik=array(rbinom(nrow(DT), 1, pinsamp), dim=dim_len),

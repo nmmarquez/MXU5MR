@@ -3,7 +3,7 @@ rm(list = ls())
 base <- "http://www.beta.inegi.org.mx/contenidos/proyectos/registros/vitales/"
 url_ <- paste0(base, "natalidad/microdatos/#/natalidad_base_datos_#_dbf.zip")
 save_dir <- "~/Documents/MXU5MR/nacimientos/data/inegi/"
-urls <- sapply(1985:2015, function(x) gsub("#", x, url_))
+urls <- sapply(1985:2016, function(x) gsub("#", x, url_))
 
 tempfiles <- sapply(1:length(urls), function(x) tempfile())
 extr_dir <- "~/Downloads/tmp"
