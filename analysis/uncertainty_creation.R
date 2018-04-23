@@ -1,14 +1,26 @@
 rm(list=ls())
 
 pacman::p_load(INLA, TMB, data.table, ggplot2, dplyr, dtplyr, ineq, INSP, 
-               surveillance, clusterPower)
+               surveillance, clusterPower, tidyverse)
 
 setwd("~/Documents/MXU5MR/analysis/outputs/")
 load("./ospv_pop1.Rdata")
 load("model_covs_full.Rdata")
+load("../../IHMEanlaysis/adjust.Rdata")
 source("~/Documents/MXU5MR/utilities/utilities.R")
 
 DT <- fread("./model_phi_full.csv")
+DT[,ENT_RESID:=as.numeric(str_sub(sprintf("%05d", GEOID), 1, 2))]
+DT <- left_join(
+    as.data.frame(DT), 
+    subset(rename(U1state, YEAR=year), select=c(ENT_RESID, YEAR, U1Adj)))
+DT <- left_join(
+    DT, 
+    subset(rename(U5state, YEAR=year), select=c(ENT_RESID, YEAR, U5Adj)))
+
+DT <- DT %>%
+    mutate(ADJ=ifelse(EDAD==0, U1Adj, U5Adj)) %>%
+    as.data.table
 
 # plug the quick stuff
 plugs <- list()
@@ -47,12 +59,12 @@ system.time(phidraws <- c(mods$Ratem1pop1$phi) + inla.qsample(n = 1000L, Q_phi))
 b_age <- mods$Ratem1pop1$par.vals[names(mods$Ratem1pop1$par.vals)=="beta_age"]
 b_age_abs <- c(mods$Ratem1pop1$beta, mods$Ratem1pop1$beta + b_age) 
 
-MRdraws <- exp(b_age_abs[DT$EDAD + 1] + phidraws)
+MRdraws <- exp(b_age_abs[DT$EDAD + 1] + phidraws) * DT$ADJ
 DT[,sterror:=apply(MRdraws, 1, sd)]
 DT[,lwr:=apply(MRdraws, 1, function(x) quantile(x, probs=.025))]
 DT[,upr:=apply(MRdraws, 1, function(x) quantile(x, probs=.975))]
-DT[YEAR == 2015 & EDAD == 0, 
-   POPULATION2:=subset(DT, YEAR == 2014 & EDAD==0)$POPULATION]
+# DT[YEAR == 2015 & EDAD == 0, 
+#    POPULATION2:=subset(DT, YEAR == 2014 & EDAD==0)$POPULATION]
 
 Ddraws <- apply(MRdraws, 2, function(x) x * DT$POPULATION2)
 Ddraws <- as.data.table(Ddraws)
@@ -90,16 +102,18 @@ plugs["crude"] <- sd(with(subset(DT, POPULATION2 != 0), Ratem1pop1))
 
 
 jpeg("~/Documents/MXU5MR/analysis/plots/logmortalitymuni.jpg")
-ggplot(DT[YEAR == 2015,], aes(x=EDAD+1, y=log(Ratem1pop1), group=GEOID)) +
+ggplot(DT[YEAR == 2015,], aes(x=EDAD+1, y=Ratem1pop1, group=GEOID)) +
+    coord_trans(y="log") +
     geom_line(alpha=.1) + 
     labs(x="Age", y="Log Mortality Rate", title="Mortality by Municipality") + 
     theme_set(theme_gray(base_size = 28))
 dev.off()
 
 jpeg("~/Documents/MXU5MR/analysis/plots/logpoperrors.jpg")
-ggplot(DT[YEAR!=2015], aes(x=log(POPULATION+1), y=sterror, color=EDAD, group=EDAD)) + 
-    geom_point(alpha=.4) + labs(x="Log Population", title="Demographics & error",
-                        y=expression(M[x]~std.~err.), color="Age") + 
+ggplot(DT[YEAR!=2015], aes(x=(POPULATION+1), y=sterror, color=EDAD, group=EDAD)) + 
+    geom_point(alpha=.4) + labs(x="Population", title="Demographics & error",
+                        y=expression(M[x]~std.~err.), color="Age") +
+    coord_trans(x="log") +
     theme_set(theme_gray(base_size = 28))
 dev.off()
 
@@ -235,7 +249,7 @@ for(i in 2000:2015){
 }
 
 DF5q0_diff <- DF5q0 %>% filter(YEAR == 2000 | YEAR == 2015) %>% 
-    group_by(GEOID) %>% summarise(fqz_diff=nth(fqz, 1) - nth(fqz, 2)) %>%
+    group_by(GEOID) %>% summarise(fqz_diff=nth(fqz, 2) - nth(fqz, 1)) %>%
     arrange(fqz_diff)
     
 DF5q0_diff %>% ggplot(aes(x=fqz_diff, fill=1, alpha=.5)) +
@@ -245,12 +259,12 @@ DF5q0_diff %>% ggplot(aes(x=fqz_diff, fill=1, alpha=.5)) +
          title="5q0 Change across Municipalities")
 
 DT %>% filter(GEOID %in% head(DF5q0_diff$GEOID, 9)) %>%
-    ggplot(aes(x=YEAR, y=log(Ratem1), group=EDAD, color=EDAD, fill=EDAD,
+    ggplot(aes(x=YEAR, y=log(Ratem1*ADJ), group=EDAD, color=EDAD, fill=EDAD,
                ymin=log(lwr), ymax=log(upr))) + 
     geom_line() + geom_ribbon(alpha=.3) + facet_wrap(~GEOID)
 
 DT %>% filter(GEOID %in% tail(DF5q0_diff$GEOID, 9)) %>%
-    ggplot(aes(x=YEAR, y=log(Ratem1), group=EDAD, color=EDAD, fill=EDAD,
+    ggplot(aes(x=YEAR, y=log(Ratem1*ADJ), group=EDAD, color=EDAD, fill=EDAD,
                ymin=log(lwr), ymax=log(upr))) + 
     geom_line() + geom_ribbon(alpha=.3) + facet_wrap(~GEOID)
 

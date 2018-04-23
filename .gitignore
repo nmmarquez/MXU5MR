@@ -1,6 +1,8 @@
 *shape_files/
 *models/
 *.Rda*
+*.RData
+*.html
 *.rda*
 *.Rds
 *.rds

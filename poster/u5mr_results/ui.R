@@ -36,12 +36,53 @@ body <- dashboardBody(
                )
         ) 
     ),
+    status="danger",
     tags$head(tags$style(HTML('
-                              section.content {
-                              height: 2500px;
+                              /* logo */
+                              .skin-blue .main-header .logo {
+                              background-color: #070B19;
                               }
-                              ')))
-    )
+                              
+                              /* logo when hovered */
+                              .skin-blue .main-header .logo:hover {
+                              background-color: #070B19;
+                              }
+                              
+                              /* navbar (rest of the header) */
+                              .skin-blue .main-header .navbar {
+                              background-color: #070B19;
+                              }        
+                              
+                              /* main sidebar */
+                              .skin-blue .main-sidebar {
+                              background-color: #070B19;
+                              }
+                              
+                              /* active selected tab in the sidebarmenu */
+                              .skin-blue .main-sidebar .sidebar .sidebar-menu .active a{
+                              background-color: #ff0000;
+                              }
+                              
+                              /* other links in the sidebarmenu */
+                              .skin-blue .main-sidebar .sidebar .sidebar-menu a{
+                              background-color: #00ff00;
+                              color: #000000;
+                              }
+                              
+                              /* other links in the sidebarmenu when hovered */
+                              .skin-blue .main-sidebar .sidebar .sidebar-menu a:hover{
+                              background-color: #DF0101;
+                              }
+                              /* toggle button when hovered  */                    
+                              .skin-blue .main-header .navbar .sidebar-toggle:hover{
+                              background-color: #DF0101;
+                              }
+                              /* Highlighted Tab Color*/
+                              .nav-tabs-custom .nav-tabs li.active {
+                              border-top-color: #DF0101;
+                              }')))
+)
+    
 
 
 
