@@ -12,7 +12,7 @@ rm(list=ls())
 
 pacman::p_load(INLA, TMB, raster, data.table, ggplot2, dplyr, dtplyr, ineq, 
                INSP, surveillance, clusterPower, rvest, spdep, plotly, tidyr,
-               stringr)
+               stringr, gridExtra, reldist, leaflet)
 
 setwd("~/Documents/MXU5MR/analysis/outputs/")
 load("./uncertainty_draws.Rdata")
@@ -21,6 +21,7 @@ load("../../IHMEanlaysis/df_mxstate.RData")
 U1state <- rename(U1state, YEAR=year)
 U5state <- rename(U5state, YEAR=year)
 DT <- fread("./model_phi_full.csv") %>% as.data.frame
+nDraw <- dim(q0array)[3]
 
 DFName <- mx.sp.df@data %>%
     mutate(GEOID=as.numeric(GEOID)) %>%
@@ -48,6 +49,12 @@ DFpop <- DT %>%
     mutate(RateAdjH=apply(MRdraws, 1, quantile, probs=.975)) %>%
     as.data.frame
 
+DFpoptot <- DFpop %>%
+    group_by(GEOID, YEAR) %>%
+    summarize(Population=sum(Population)) %>%
+    ungroup %>%
+    right_join(unique(select(DFpop, GEOID, YEAR)))
+
 MEXlistw <- poly2nb(mx.sp.df, queen=TRUE) %>% nb2listw
 
 tidymap <- fortify(mx.sp.df) %>% mutate(id=as.numeric(id)) %>%
@@ -64,32 +71,39 @@ DF5q0_delta <- mx.sp.df@data %>%
     mutate(Neighbors=sapply(MEXlistw$weights, length)) %>%
     mutate(Cluster=ifelse(
         fqz_diff < mean(fqz_diff) & laggedFQZDiff < mean(fqz_diff), 
-        "Great Change", "Little Change")) %>%
+        "Hi", "Lo")) %>%
     mutate(Cluster=ifelse(pSig, Cluster, NA)) %>%
-    mutate(pAlpha=ifelse(pSig, .4, .35))
+    mutate(pAlpha=ifelse(pSig, .4, .35)) %>%
+    mutate(Cluster=as.factor(Cluster)) %>%
+    mutate(Cluster=relevel(Cluster, "Lo"))
 
-p <- DF5q0_delta %>%
-    ggplot(aes(x=fqz_diff, y=laggedFQZDiff, alpha=pAlpha, color=Cluster)) + 
-    geom_point() + 
-    labs(title="Lisa Examination of Clusters", 
+lisaDelta <- DF5q0_delta %>%
+    left_join(subset(DFpoptot, YEAR==2015)) %>%
+    ggplot(aes(x=fqz_diff, y=laggedFQZDiff, color=Cluster)) + 
+    geom_point(aes(size=Population/max(Population)), alpha=.45) + 
+    labs(title="", 
          x="Change in 5q0", y="Lagged Change in 5q0") + 
-    scale_alpha_continuous(guide=F) +
-    geom_hline(yintercept=mean(DF5q0_delta$fqz_diff), linetype=2, alpha=.6) + 
-    geom_vline(xintercept=mean(DF5q0_delta$fqz_diff), linetype=2, alpha=.6)
+    geom_hline(yintercept=0, linetype=2, alpha=.6) + 
+    geom_vline(xintercept=0, linetype=2, alpha=.6) +
+    theme_classic() + 
+    scale_size_continuous(guide=FALSE) +
+    theme(axis.title=element_text(size=20),
+          axis.text=element_text(size=16),
+          legend.text=element_text(size=16),
+          legend.title=element_text(size=20))
 
-ggplotly(p)
-
-p2 <- DF5q0_delta %>% left_join(tidymap, by="GEOID") %>% 
+mapDelta <- DF5q0_delta %>% left_join(tidymap, by="GEOID") %>% 
     ggplot(aes(x=long, y=lat)) +
     theme_classic() + 
     geom_polygon(aes(group=group, fill = Cluster)) + 
     theme(axis.line = element_blank(),
           legend.title=element_blank(), axis.text=element_blank(),
-          axis.ticks=element_blank(), axis.title=element_blank(),
-          title=element_text(size=26)) + 
-    labs(title="Significant Cluster By Location")
+          axis.ticks=element_blank(), axis.title=element_blank()) + 
+    labs(title="") +
+    scale_fill_discrete(guide=FALSE) +
+    labs(title="Clusters of Change: 2000-2015") +
+    theme(plot.title=element_text(size=24))
 
-p2
 
 # 12028 and neighbors
 gChange <- DF5q0_delta %>% arrange(laggedFQZDiff) %>% head(10) %>%
@@ -128,24 +142,36 @@ DF5q0_2015 <- mx.sp.df@data %>%
     mutate(Cluster=ifelse(pSig, Cluster, NA)) %>%
     mutate(pAlpha=ifelse(pSig, .4, .35))
 
-DF5q0_2015 %>%
-    ggplot(aes(x=fqz, y=laggedFQZ, alpha=pAlpha, color=Cluster)) + 
-    geom_point() + 
-    labs(title="Lisa Examination of Clusters", 
+lisa2015 <- DF5q0_2015 %>%
+    left_join(DFpoptot)%>%
+    ggplot(aes(x=fqz, y=laggedFQZ, color=Cluster)) + 
+    geom_point(aes(size=Population/max(Population)), alpha=.45) + 
+    labs(title="", 
          x="5q0", y="Lagged 5q0") + 
-    scale_alpha_continuous(guide=F) +
-    geom_hline(yintercept=mean(DF5q0_2015$fqz), linetype=2, alpha=.6) + 
-    geom_vline(xintercept=mean(DF5q0_2015$fqz), linetype=2, alpha=.6)
+    geom_hline(yintercept=.0145, linetype=2, alpha=.6) + 
+    geom_vline(xintercept=.0145, linetype=2, alpha=.6) + 
+    theme_classic() +
+    scale_size_continuous(guide=FALSE) +
+    theme(axis.title=element_text(size=20),
+          axis.text=element_text(size=16),
+          legend.text=element_text(size=16),
+          legend.title=element_text(size=20))
+    
 
-DF5q0_2015 %>% left_join(tidymap, by="GEOID") %>% 
+map2015 <- DF5q0_2015 %>% left_join(tidymap, by="GEOID") %>%
     ggplot(aes(x=long, y=lat)) +
     theme_classic() + 
     geom_polygon(aes(group=group, fill = Cluster)) + 
     theme(axis.line = element_blank(),
           legend.title=element_blank(), axis.text=element_blank(),
-          axis.ticks=element_blank(), axis.title=element_blank(),
-          title=element_text(size=26)) + 
-    labs(title="Significant Cluster By Location")
+          axis.ticks=element_blank(), axis.title=element_blank()) + 
+    scale_fill_discrete(guide=FALSE) +
+    labs(title="2015 5q0 Clusters") +
+    theme(plot.title=element_text(size=24))
+
+ggsave("../plots/lisaplot.png",
+    grid.arrange(mapDelta, lisaDelta, map2015, lisa2015))
+
 
 p4 <- DF5q0_2015 %>% arrange(fqz) %>%
     filter(row_number() %in% 1:5 | row_number() %in% (n()-4):(n())) %>%
@@ -228,4 +254,192 @@ summary(corReal)
 apply(q0array[,c(1,16),], c(1,2), median) %>% 
     as.data.frame %>%
     with(cor(V1, V2))
-z
+
+### Inequality Calulation gini
+head(DFpoptot)
+popArray <- array(DFpoptot$Population, dim=dim(q0array)[1:2])
+
+giniArr <- sapply(
+    1:dim(q0array)[2], function(i) sapply(1:nDraw, function(j){
+        gini(q0array[,i,j], popArray[,i])
+        }))
+
+giniDF <- data.frame(
+    meanGini=apply(giniArr, 2, mean),
+    l_=apply(giniArr, 2, quantile, probs=.025),
+    h_=apply(giniArr, 2, quantile, probs=.975),
+    Year = unique(DFpop$YEAR)
+)
+
+hivals <- apply(q0array, c(2,3), quantile, .99)
+lovals <- apply(q0array, c(2,3), quantile, .01)
+relineq <- hivals / lovals
+absineq <- hivals - lovals
+relineqdiff <- relineq[nrow(relineq),] - relineq[1,]
+absineqdiff <- absineq[nrow(absineq),] - absineq[1,]
+DTineq <- data.table(year=2000:2015, relineq=apply(relineq, 1, mean),
+                     relineqlow=apply(relineq, 1, quantile, probs=.025),
+                     relineqhi=apply(relineq, 1, quantile, probs=.975),
+                     absineq=apply(absineq, 1, mean),
+                     absineqlow=apply(absineq, 1, quantile, probs=.025),
+                     absineqhi=apply(absineq, 1, quantile, probs=.975))
+
+ginip <- giniDF %>%
+    ggplot(aes(x=Year, y=meanGini, ymin=l_, ymax=h_)) + 
+    geom_line() + geom_ribbon(alpha=.3) +  
+    theme_classic() +
+    labs(x="Year", y="Gini Coefficient") +
+    theme(axis.title=element_text(size=20),
+          axis.text=element_text(size=16),
+          legend.text=element_text(size=16),
+          legend.title=element_text(size=20))
+
+pineqR <- ggplot(DTineq, aes(x=year, y=relineq)) + geom_line() +
+    geom_ribbon(aes(x=year, ymin=relineqlow, ymax=relineqhi), alpha=.25) +
+    labs(x="", y="Relative Inequality") +
+    theme(plot.title = element_text(hjust = 0.5)) +
+    theme_classic() + 
+    scale_y_continuous(labels=function(l) paste0(l, ".00")) +
+    theme(axis.title=element_text(size=20),
+          axis.text=element_text(size=16),
+          legend.text=element_text(size=16),
+          legend.title=element_text(size=20))
+
+pineqA <- ggplot(DTineq, aes(x=year, y=absineq)) + geom_line() +
+    geom_ribbon(aes(x=year, ymin=absineqlow, ymax=absineqhi), alpha=.25) +
+    labs(x="", y="Absolute Inequality", title="5Q0 Inequality") +
+    theme(plot.title = element_text(hjust = 0.5)) +
+    theme_classic() +
+    theme(plot.title=element_text(size=24)) +
+    theme(axis.title=element_text(size=20),
+          axis.text=element_text(size=16),
+          legend.text=element_text(size=16),
+          legend.title=element_text(size=20))
+
+## Oaxaca Inequality
+oaxIndx <- which(DFName$State == "Oaxaca")
+giniArrOax <- sapply(
+    1:dim(q0array)[2], function(i) sapply(1:nDraw, function(j){
+        gini(q0array[oaxIndx,i,j], popArray[oaxIndx,i])
+    }))
+
+giniOaxDF <- data.frame(
+    meanGini=apply(giniArrOax, 2, mean),
+    l_=apply(giniArrOax, 2, quantile, probs=.025),
+    h_=apply(giniArrOax, 2, quantile, probs=.975),
+    Year = unique(DFpop$YEAR)
+)
+
+giniOaxDF %>%
+    ggplot(aes(x=Year, y=meanGini, ymin=l_, ymax=h_)) + 
+    geom_line() + geom_ribbon(alpha=.3) +  
+    theme_classic() +
+    labs(x="Year", y="Gini Coefficient") +
+    theme(axis.title=element_text(size=20),
+          axis.text=element_text(size=16),
+          legend.text=element_text(size=16),
+          legend.title=element_text(size=20))
+    
+
+iggsave("../plots/ineq.png",
+       grid.arrange(pineqA, pineqR, ginip))
+
+Ddraws[,POPULATION:=DFpop$Population]
+Ddraws[,GEOID:=DT$GEOID]
+
+natdraws <- Ddraws[,lapply(.SD, sum), by=list(EDAD, YEAR)]
+cols <- names(Ddraws)[grepl("sample", names(Ddraws))]
+natdraws[ , (cols) := lapply(.SD, `/`, POPULATION), .SDcols = cols]
+natdraws[,POPULATION:=NULL]
+natdraws[,EDAD:=NULL]
+natdraws <- natdraws[,lapply(.SD, function(x) 1-prod(1-x)), by=YEAR]
+natdraws[,m_:=apply(as.matrix(subset(natdraws, select=cols)), 1, mean)]
+natdraws[,l_:=apply(as.matrix(subset(natdraws, select=cols)), 1, quantile, probs=.025)]
+natdraws[,h_:=apply(as.matrix(subset(natdraws, select=cols)), 1, quantile, probs=.975)]
+
+pNat <- ggplot(natdraws, aes(x=YEAR, y=m_)) + geom_line() +
+    geom_ribbon(aes(x=YEAR, ymin=l_, ymax=h_), alpha=.25) +
+    labs(x="Year", y="5Q0", title="National Estimates of 5Q0") +
+    theme(plot.title = element_text(hjust = 0.5)) +
+    theme_classic()
+pNat
+
+## 5q0 Map 
+df <- mx.sp.df
+df@data$GEOID <- as.numeric(df@data$GEOID)
+col <- "fqz"
+df@data <- left_join(df@data, subset(DF5q0, YEAR == 2015)) %>%
+    left_join(DFpop %>%
+                  group_by(GEOID, YEAR) %>%
+                  summarize(Pop=round(sum(Population)))) %>%
+    left_join(DFName)
+
+df@data %>% left_join(tidymap, by="GEOID") %>%
+    ggplot(aes(x=long, y=lat)) +
+    theme_classic() + 
+    geom_polygon(aes(group=group, fill=fqz)) + 
+    theme(axis.line = element_blank(),
+          legend.title=element_text("Test"), axis.text=element_blank(),
+          axis.ticks=element_blank(), axis.title=element_blank(),
+          legend.justification=c(1,2.9),legend.position=c(.3, .45))+
+    scale_fill_distiller(palette="Spectral", name="5q0")
+
+DFCompDelta <- DFpop %>% as.data.frame %>%
+    group_by(GEOID, YEAR) %>%
+    summarize(Population=sum(Population)) %>%
+    filter(YEAR %in% c(2000, 2015)) %>%
+    left_join(as.data.frame(DF5q0), by=c("GEOID", "YEAR")) %>%
+    select(-fqzl, -fqzh) %>%
+    gather(variable, value, -(GEOID:YEAR)) %>%
+    unite(temp, variable, YEAR) %>%
+    spread(temp, value) %>%
+    ungroup %>%
+    mutate(Population_2000=Population_2000/sum(Population_2000)) %>%
+    mutate(Population_2015=Population_2015/sum(Population_2015)) %>%
+    mutate(grossI=(fqz_2015+fqz_2000)*.5*(Population_2015-Population_2000)) %>%
+    mutate(residI=(Population_2015+Population_2000)*.5*(fqz_2015-fqz_2000)) %>%
+    mutate(totI=grossI + residI) %>%
+    arrange(totI/Population_2015) %>%
+    left_join(subset(DFName, select=c(GEOID, State, Municipality)))
+
+pTimeCor <- DFCompDelta %>%
+    ggplot(aes(x=fqz_2000, y=fqz_2015)) +
+    geom_point(alpha=.22) +
+    theme_classic() +
+    xlab("2000 5q0") + ylab("2015 5q0") +
+    ggtitle("Mexico Municipalities Change in 5q0") +
+    lims(x=c(0, .125), y=c(0, .125)) +
+    geom_abline(linetype=2)
+
+pTimeCor
+
+pDecomp <- with(DFCompDelta,
+                data.frame(Population=cumsum(Population_2015),
+                           Contribution=cumsum(totI) /sum(totI))) %>%
+    ggplot(aes(x=Population, y=Contribution)) +
+    geom_line() +
+    labs(y="Contribution to Total Change",
+         title="Population Contribution to Percent Total Change") +
+    geom_abline(linetype=2) +
+    theme_classic() +
+    theme(plot.title=element_text(size=24)) +
+    theme(axis.title=element_text(size=20),
+          axis.text=element_text(size=16),
+          legend.text=element_text(size=16),
+          legend.title=element_text(size=20))
+
+ggsave("../plots/contribDelta.png",
+       pDecomp)
+
+## Oaxaca
+nrow(filter(DFName, State == "Oaxaca")) / nrow(DFName)
+
+countN <- 30
+
+arrange(DF5q0_2015, fqz) %>% left_join(DFName) %>% 
+    head(n=countN) %>% filter(State=="Oaxaca") %>% 
+    nrow %>% `/`(countN)
+
+arrange(DF5q0_2015, -fqz) %>% left_join(DFName) %>% 
+    head(n=countN) %>% filter(State=="Oaxaca") %>% 
+    nrow %>% `/`(countN)

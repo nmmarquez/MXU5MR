@@ -45,10 +45,10 @@ map_MX_data <- function(state, year, relative_scale){
                     round(df@data$fqzl, 4),", ",
                     round(df@data$fqzh, 4), ")")
     if(relative_scale){
-        pal <- colorNumeric(palette = "YlGnBu", domain=mx.sp.df@data$fqz)
+        pal <- colorNumeric(palette = "Spectral", domain=mx.sp.df@data$fqz, reverse=TRUE)
     }
     else{
-        pal <- colorNumeric(palette = "YlGnBu", 
+        pal <- colorNumeric(palette = "Spectral", reverse=TRUE, 
                             domain = c(0, max(all_level_5q0$fqz)))
     }
     map1 <- leaflet() %>% addProviderTiles("CartoDB.Positron") %>% 

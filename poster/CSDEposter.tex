@@ -56,7 +56,7 @@
 \end{minipage}
 %
 \begin{minipage}[b]{0.33\linewidth}
-\includegraphics[width=25cm]{/home/nyanyan/Documents/MXU5MR/poster/figures/CSDE_logo_transparent.png}\\
+\includegraphics[width=25cm]{/home/nyannyan/Documents/MXU5MR/poster/figures/CSDE_logo_transparent.png}\\
 \end{minipage}
 
 \vspace{1cm} % A bit of extra whitespace between the header and poster content
@@ -77,13 +77,6 @@
 \begin{abstract}
 
 Mexico has had dramatic declines in under 5 mortality from 1990 to 2015 and is one of only a handful of countries that have reached the Millennium Development Goal 4 (MDG4) of reducing national level mortality by two thirds from 48 to 16 deaths per 1000 live births. While national level reports of mortality have been made by several international groups and have tracked the changes in Mexico's under  mortality, no study to date has done a comparative assessment of the differential levels of child mortality within Mexico by municipality. In order to assess how municipalities differ in their under 5 mortality rate and probability of death before age 5 ($~_{5}q_{0}$) we calculate age specific mortality rate using spatiotemporal age models. In addition, we assess the difference in time from birth till registration by municipality for all births recorded in the years 2000-2015 in order to assess quality of vital registration.
-
-Under 5 mortality count data were taken from registrations reported by Subsistema de Información sobre Nacimientos (SINAC) and Instituto Nacional de Estadística y Geografía (INEGI) while population data was calculated from birth record data from each district as reported by INEGI. Mortality counts were estimated from this data using a poisson hierarchical spatiotemporal age regression where the relative risk was used as the mortality rate estimate for a given municipality.
-
-We found that estimates of under 5 mortality are largely improved by the use of spatiotemporal age models. Despite making large strides in improving national level under 5 mortality, many municipalities have not hit the national rate of less than 16 deaths per 1000 live births, with some municipalities having values averaging above the 1990 reference value for the MDG4 target. We also found large differences by municipality in the time from birth to registration as well as significant spatial patterning in these delays that likely bias estimates such that they show less mortality than there actually is within the country.
-
-Though are analysis also showed Mexico making major declines in national level mortality between 2000 and 2015, are study found a significant number of municipalities who had not reached this goal by 2015. In addition we found significant geographic correlation in birth registry delays that likely bias our findings towards more optimistic results of child mortality and inequities. We found strong evidence that municipalities in Mexico have experienced the improvements to health differentially and in a geographically stratified way.
-
 
 \end{abstract}
 
@@ -109,10 +102,9 @@ Though are analysis also showed Mexico making major declines in national level m
 
 \begin{enumerate}
 \item Understand the difference in quality of Vital Registration Data at the municipality level.
-\item Test the geographic and temporal correlation of child mortality data.
-\item Use 2D Matern covariance specification for geographic correlations in a novel manner, and test against more traditional methods.
 \item Build a fulll time series of estimates for age specific child mortality and$~_{5}q_{0}$ for all 2456 municipalities for years 2000-2015.
-\item Assess geographic and tempor patterns in results.
+\item Assess changes in distribution of$~_{5}q_{0}$ experience.
+\item Decompose the relative contribution made from real change and compositioinal changes of$~_{5}q_{0}$.
 \end{enumerate}
 
 %----------------------------------------------------------------------------------------
@@ -130,36 +122,6 @@ $$
 This cohort method of tracking mortality and populations makes the assumption of net zero migration for all demographic units.
 %------------------------------------------------
 
-\subsection*{Mathematical Section}
-
-Birth records were analyzed for spatial correlation of quality (time till birth recorded) by use of a Moran's I test.
-
-$$
-I = \frac{N}{W} ~ \frac{\Sigma_i \Sigma_j w_{ij}(x_i - \bar{x})(x_j - \bar{x})}{\Sigma_i (x_i - \bar{x})^2}
-$$
-
-Age specific mortality was estimated using the following poisson mixed effect model structure.
-
-\begin{flalign*}
-  D_{l,a,t} & \sim Poisson(\hat{D}_{l,a,t}) \\
-  \hat{D}_{l,a,t} & = exp(\beta_a + \phi_{l,a,t}) * P_{l,a,t} \\
-  \phi & \sim \text{MVN}(\mathbf{0}, Q^{-1}) \\
-  Q & = Q^t \otimes Q^a \otimes Q^l \\
-\end{flalign*}
-
-Where $Q^t$ and $Q^a$ follow a multivariate normal distribution with precision.
-
-\begin{aligned}
-Q^{AR}_{i,j} =
-\begin{cases}
-    \frac{1}{\sigma^2} ,& \text{if  } i = j = 0 | i = j = max(i) \\
-    \frac{1 + \rho^2}{\sigma^2} ,& \text{else if  } i = j \\
-    \frac{-\rho}{\sigma^2},  & \text{else if  } i \sim j \\
-    0, & \text{otherwise}
-\end{cases}
- \end{aligned}
-
-and $Q^l$ follows either a LCAR or 2D Matern specification. This will give us our matrix $Q$ which forms the structure of our approximately 200,000 random effects (one for each unique combination of municipality(2456), year(16), and age group(5)).
 %----------------------------------------------------------------------------------------
 %	RESULTS
 %----------------------------------------------------------------------------------------
@@ -167,28 +129,33 @@ and $Q^l$ follows either a LCAR or 2D Matern specification. This will give us ou
 \section*{Results}
 
 Analysis of time from birth until registration showed that there was a significant amount of variability in the distribution of births at each municipality with a mean time of .6  and a standard deviation of .4. In addition to this variability there was a strong geographic correlation between the time delay of births until time to registration with a Moran's I of .7661 (p $<$ .01) indicative of strong positive geographic autocorrelation(figure 1).
-%
-\begin{wrapfigure}{l}{12cm} % Left or right alignment is specified in the first bracket, the width of the table is in the second
-\includegraphics{/home/nyanyan/Documents/MXU5MR/analysis/plots/regisdiff.png}
-\captionof{figure}{\color{Green} Difference in Registration Time}
-\end{wrapfigure}
-%
 
-Though this study was the first to estimate under 5 mortality and$~_5q_{0}$ at the municipality level within Mexico, we further assessed our results by comparing the aggregated estimates of$~_5q_{0}$ against the reported values of other major institutions. The estimated values of$~_5q_{0}$ for the aggregated 2015 national levels, 0.015 (0.0141, 0.0158), were found to be similar to both United Nations estimate of .0132 and the Institute for Health Metrics and Evaluation .0154 (.0117-.0200) and these similarities held true for the entire time series of data. Our analysis showed that there has been a considerable drop in child mortality in Mexico, as measured here by$~_5q_{0}$, (figure 2) which is in agreement with the previous literature on the topic.
+Results from the LCAR model where used in the final estimation of municipality age specific child mortality and used to estimate$~_{5}q_{0}$ at the municipality level. Anaysis of$~_{5}q_{0}$ found that there was a significant decline in the level of inequality of lived$~_{5}q_{0}$ though all metrics showed this level stabalizing in recent years. Though inequality dcereased in the observed time series the relative positioning of municipalities were strongly correlated between 2000 and 2015 , 0.6232 (0.5903-0.6549), suggesting that municipalities that had relatively poor child mortality as measured by$~_{5}q_{0}$ within Mexico in 2000 continued to perform poorly relative to the national average in 2015.
 
 %
-\begin{center}\vspace{2cm}
-\includegraphics[width=1.5\linewidth]{/home/nyanyan/Documents/MXU5MR/analysis/plots/compare5q0natmuni.jpg}
-\captionof{figure}{\color{Green} Temporal Change in$~_5q_0$}
-\end{center}\vspace{2cm}
+\begin{center}\vspace{1cm}
+\includegraphics[width=.8\columnwidth]{/home/nyannyan/Documents/MXU5MR/analysis/plots/contribDelta.png}
+\captionof{figure}{\color{Green} Clusters of Significant Change and Level}
+\end{center}\vspace{1cm}
 %
 
-\text{}
+%
+\begin{center}\vspace{1cm}
+\includegraphics[width=.8\columnwidth]{/home/nyannyan/Documents/MXU5MR/analysis/plots/lisaplot.png}
+\captionof{figure}{\color{Green} Clusters of Significant Change and Level}
+\end{center}\vspace{1cm}
+%
 
-This analysis showed significant spatial correlation of under 5 mortality rates, indicative of spatial stratification of health outcomes that have been observed in other research. This spatiotemporal hetrogeneity of health outcomes is not only visible in cross sections of our study, but is also visible in the change over time of age specific mortality and  of$~_5q_{0}$.
+%
+\begin{center}\vspace{1cm}
+\includegraphics[width=.7\columnwidth]{/home/nyannyan/Documents/MXU5MR/analysis/plots/ineq.png}
+\captionof{figure}{\color{Green} Changes in Inequality}
+\end{center}\vspace{1cm}
+%
 
-Furthermore, this analysis is the first of our knowledge to examine measures of equality in child demographic health outcomes, such as age specific mortality or$~_5q_{0}$, and highlights that although improvements in child mortality have been made they have been experienced differentially by different municipalities leading to stagnating measures of inequality.
+Decomposing changes to the national level$~_{5}q_{0}$ into compositional changes and real rate changes found that 99.5\% of the changes to national$~_{5}q_{0}$ came from real declines in rates among Mexican municipalities. Around 50\% of the decline observed between 2000 and 2015 was made by only 20\% of the population, which likely contributed to the decline in measures of inequality. Furthermore, ordering the municipalities from the largest to the smallest organizational units, we found that a nearly equal contribution to the change in national level$~_{5}q_{0}$ came from the smallest 50\% and the largest 50\% of the municipalities. The municipalities that most hindered the decline in national$~_{5}q_{0}$ were largely due to increases in the population size and their relative contribution to the national average.
 
+Examing the lowest and highest 30 municipalities of$~_{5}q_{0}$ found that Oaxaca, which contains around 25\% of the countries municipalities, makes up 43\% of the highest observed$~_{5}q_{0}$ municipalities as well as 53\% of the lowest observed$~_{5}q_{0}$ municipalities. Looking at just Oaxaca, the state level inequalities have not significantly changed over the observed time period. Other low performers in terms of relative level of 2015$~_{5}q_{0}$ come from the states of Chiapas, Guerrero, and Chihuahua while high performing municipalities are located in Tamaulipas, Yucatan, and Michoacan de Ocampo.
 %----------------------------------------------------------------------------------------
 %	CONCLUSIONS
 %----------------------------------------------------------------------------------------
@@ -198,10 +165,11 @@ Furthermore, this analysis is the first of our knowledge to examine measures of 
 \section*{Conclusions}
 
 \begin{itemize}
-\item Additional evidence of Mexico's continued improvement in reducing child mortality at national level.
 \item Birth vital registration quality is heterogenous across Mexico and is significantly spatially correlated.
-\item At the municipality level improvements in child mortality are less certain.
+\item Additional evidence of reducing child mortality and inequality at national level.
+\item Reduction has largely come from real changes in rate rather than compositional changes.
 \item Mexico has stagnated in reducing inequality of child mortality in both relative and absolute measures.
+\item State level performance of reduction and inequality of$~_{5}q_{0}$ measures is heterogenous.
 \end{itemize}
 
 \color{DarkSlateGray} % Set the color back to DarkSlateGray for the rest of the content
@@ -210,9 +178,9 @@ Furthermore, this analysis is the first of our knowledge to examine measures of 
 %	FORTHCOMING RESEARCH
 %----------------------------------------------------------------------------------------
 
-\section*{Forthcoming Research}
-
-Future research will address the differences in quality of vital registration with increased variance of estimates as well as estimate the effect that migration has on mortality parameter estimates.
+% \section*{Forthcoming Research}
+%
+% Future research will address the differences in quality of vital registration with increased variance of estimates as well as estimate the effect that migration has on mortality parameter estimates.
 
 %----------------------------------------------------------------------------------------
 %	REFERENCES
