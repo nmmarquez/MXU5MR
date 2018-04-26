@@ -1,5 +1,5 @@
 ---
-output: 
+output:
     html_document:
         includes:
             in_header: assets/huskyheader.html
@@ -42,8 +42,6 @@ In order to remain consistent with current demographic estimates of mortality, w
 
 ## Results
 
-Municipality  level results can be aggregated to both state and national levels in order to assess trend on more course geographic scales. The national level results in this analysis reflect the findings found in several other studies. Mexico has greatly reduced its level of child mortality as shown in the following graph with a significant decrease in the national level of$~_5q_0$.
-
 ```{R loads, echo=FALSE, warning=FALSE, message=FALSE}
 pacman::p_load(INLA, TMB, raster, data.table, ggplot2, dplyr, dtplyr, ineq,
                INSP, surveillance, clusterPower, rvest, spdep, plotly, tidyr,
@@ -53,6 +51,7 @@ setwd("~/Documents/MXU5MR/analysis/outputs/")
 load("~/Documents/MXU5MR/analysis/outputs/uncertainty_draws.Rdata")
 load("~/Documents/MXU5MR/IHMEanlaysis/adjust.Rdata")
 load("~/Documents/MXU5MR/IHMEanlaysis/df_mxstate.RData")
+load("~/Documents/MXU5MR/analysis/outputs/regDelaySPDF.Rdata")
 U1state <- rename(U1state, YEAR=year)
 U5state <- rename(U5state, YEAR=year)
 DT <- fread("~/Documents/MXU5MR/analysis/outputs/model_phi_full.csv") %>%
@@ -90,6 +89,35 @@ tidymap <- fortify(mx.sp.df) %>% mutate(id=as.numeric(id)) %>%
     left_join(mx.sp.df@data %>% mutate(id=0:(nrow(mx.sp.df)-1)), by="id") %>%
     mutate(GEOID=as.numeric(GEOID))
 ```
+
+Before municipality level results can be examined we address the variation in the data quality that exists from the Mexico Vital Registration Data from INEGI. For the years between 1995 and 2015 information on the delay of registration from time of birth was collected for each birth record and averaged across the time series for each municipality. Average registration time for municipalities ranges from less than one month to over three years. These results show significant geospataial autocorrelation, as measured by a Morans I test, with significant clusters of delayed reporting municipalities present in Chihuahua, Guerrero, and Chiapas. These delays would could result in biases in both the denominator and the numerator when trying to estimate age annual specific mortality.
+
+```{R regDelay, echo=FALSE, warning=FALSE, message=FALSE}
+col <- "REG_DIFFN"
+regDelaySPDF@data$GEOID <- as.numeric(regDelaySPDF@data$GEOID)
+regDelaySPDF@data$data <- regDelaySPDF@data[, col]
+regDelaySPDF@data <- left_join(regDelaySPDF@data, DFName)
+
+popupregDelay <- paste0(
+    "State: ", regDelaySPDF@data$State,
+    "<br>Municipality: ", regDelaySPDF@data$NOM_MUN,
+    "<br>Registration Delay: ", round(regDelaySPDF@data$data, 4))
+
+palrd <- colorNumeric(palette = "Spectral", domain = regDelaySPDF@data$data,
+                    reverse=TRUE)
+mapRegDelay <- leaflet() %>% addProviderTiles("CartoDB.Positron") %>%
+    addPolygons(data=regDelaySPDF, fillColor=~palrd(data), color = "#b2aeae",
+        weight = 0.3, fillOpacity = 0.7, smoothFactor = 0.2,
+        popup = popupregDelay) %>%
+    addLegend("bottomleft", pal = palrd,
+    values = regDelaySPDF$data,
+    title ="Registration <br>Time (Years)", opacity = 1)
+
+mapRegDelay
+```
+
+Municipality  level results can be aggregated to both state and national levels in order to assess trend on more course geographic scales. The national level results in this analysis reflect the findings found in several other studies. Mexico has greatly reduced its level of child mortality as shown in the following graph with a significant decrease in the national level of$~_5q_0$.
+
 
 ```{R natLevel, echo=FALSE, warning=FALSE, message=FALSE}
 Ddraws[,POPULATION:=DFpop$Population]

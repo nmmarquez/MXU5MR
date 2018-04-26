@@ -61,6 +61,10 @@ mx.sp.df@data <- left_join(mx.sp.df@data, missdf)
 mx.sp.df@data <- left_join(mx.sp.df@data, logdf)
 mx.sp.df@data <- left_join(mx.sp.df@data, births[,.N,by=GEOID])
 
+regDelaySPDF <- mx.sp.df
+save(regDelaySPDF, 
+     file="~/Documents/MXU5MR/analysis/outputs/regDelaySPDF.Rdata")
+
 #spdf2leaf(mx.sp.df, col="REG_DIFFN", label="Registration <br>Time (Years)")
 #spdf2leaf(mx.sp.df, col="N", label="Birth<br>Count")
 #spdf2leaf(mx.sp.df, col="log_birth", label="Log Birth<br>Count")

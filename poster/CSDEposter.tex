@@ -119,7 +119,7 @@ $$
 P_{l,a,t} = P_{l,a-1,t-1} - D_{l,a-1,t-1}
 $$
 
-This cohort method of tracking mortality and populations makes the assumption of net zero migration for all demographic units.
+%This cohort method of tracking mortality and populations makes the assumption of net zero migration for all demographic units.
 %------------------------------------------------
 
 %----------------------------------------------------------------------------------------
@@ -130,12 +130,22 @@ This cohort method of tracking mortality and populations makes the assumption of
 
 Analysis of time from birth until registration showed that there was a significant amount of variability in the distribution of births at each municipality with a mean time of .6  and a standard deviation of .4. In addition to this variability there was a strong geographic correlation between the time delay of births until time to registration with a Moran's I of .7661 (p $<$ .01) indicative of strong positive geographic autocorrelation(figure 1).
 
-Results from the LCAR model where used in the final estimation of municipality age specific child mortality and used to estimate$~_{5}q_{0}$ at the municipality level. Anaysis of$~_{5}q_{0}$ found that there was a significant decline in the level of inequality of lived$~_{5}q_{0}$ though all metrics showed this level stabalizing in recent years. Though inequality dcereased in the observed time series the relative positioning of municipalities were strongly correlated between 2000 and 2015 , 0.6232 (0.5903-0.6549), suggesting that municipalities that had relatively poor child mortality as measured by$~_{5}q_{0}$ within Mexico in 2000 continued to perform poorly relative to the national average in 2015.
+Results from a multidimensional,age, time and geography, Gaussian Markov Random Field latent model were used in the final estimation of municipality age specific child mortality and used to estimate$~_{5}q_{0}$ at the municipality level. Anaysis of$~_{5}q_{0}$ found that there was a significant decline in the level of inequality of lived$~_{5}q_{0}$ though all metrics showed this level stabalizing in recent years. Though inequality dcereased in the observed time series the relative positioning of municipalities were strongly correlated between 2000 and 2015 , 0.6232 (0.5903-0.6549), suggesting that municipalities that had relatively poor child mortality as measured by$~_{5}q_{0}$ within Mexico in 2000 continued to perform poorly relative to the national average in 2015.
+
+Decomposing changes to the national level$~_{5}q_{0}$ into compositional changes and real rate changes found that 99.5\% of the changes to national$~_{5}q_{0}$ came from real declines in rates among Mexican municipalities. Around 50\% of the decline observed between 2000 and 2015 was made by only 20\% of the population, which likely contributed to the decline in measures of inequality. Furthermore, ordering the municipalities from the largest to the smallest organizational units, we found that a nearly equal contribution to the change in national level$~_{5}q_{0}$ came from the smallest 50\% and the largest 50\% of the municipalities. The municipalities that most hindered the decline in national$~_{5}q_{0}$ were largely due to increases in the population size and their relative contribution to the national average.
+
 
 %
 \begin{center}\vspace{1cm}
-\includegraphics[width=.8\columnwidth]{/home/nyannyan/Documents/MXU5MR/analysis/plots/contribDelta.png}
-\captionof{figure}{\color{Green} Clusters of Significant Change and Level}
+\includegraphics[width=.8\columnwidth]{/home/nyannyan/Documents/MXU5MR/analysis/plots/regDelayMap.png}
+\captionof{figure}{\color{Green} Map of Delay in Registration Time}
+\end{center}\vspace{1cm}
+%
+
+%
+\begin{center}\vspace{1cm}
+\includegraphics[width=.7\columnwidth]{/home/nyannyan/Documents/MXU5MR/analysis/plots/ineq.png}
+\captionof{figure}{\color{Green} Changes in Inequality & Contribution}
 \end{center}\vspace{1cm}
 %
 
@@ -148,12 +158,10 @@ Results from the LCAR model where used in the final estimation of municipality a
 
 %
 \begin{center}\vspace{1cm}
-\includegraphics[width=.7\columnwidth]{/home/nyannyan/Documents/MXU5MR/analysis/plots/ineq.png}
-\captionof{figure}{\color{Green} Changes in Inequality}
+\includegraphics[width=.8\columnwidth]{/home/nyannyan/Documents/MXU5MR/analysis/plots/Oaxaca.png}
+\captionof{figure}{\color{Green} Oaxaca in Detail}
 \end{center}\vspace{1cm}
 %
-
-Decomposing changes to the national level$~_{5}q_{0}$ into compositional changes and real rate changes found that 99.5\% of the changes to national$~_{5}q_{0}$ came from real declines in rates among Mexican municipalities. Around 50\% of the decline observed between 2000 and 2015 was made by only 20\% of the population, which likely contributed to the decline in measures of inequality. Furthermore, ordering the municipalities from the largest to the smallest organizational units, we found that a nearly equal contribution to the change in national level$~_{5}q_{0}$ came from the smallest 50\% and the largest 50\% of the municipalities. The municipalities that most hindered the decline in national$~_{5}q_{0}$ were largely due to increases in the population size and their relative contribution to the national average.
 
 Examing the lowest and highest 30 municipalities of$~_{5}q_{0}$ found that Oaxaca, which contains around 25\% of the countries municipalities, makes up 43\% of the highest observed$~_{5}q_{0}$ municipalities as well as 53\% of the lowest observed$~_{5}q_{0}$ municipalities. Looking at just Oaxaca, the state level inequalities have not significantly changed over the observed time period. Other low performers in terms of relative level of 2015$~_{5}q_{0}$ come from the states of Chiapas, Guerrero, and Chihuahua while high performing municipalities are located in Tamaulipas, Yucatan, and Michoacan de Ocampo.
 %----------------------------------------------------------------------------------------
@@ -186,12 +194,12 @@ Examing the lowest and highest 30 municipalities of$~_{5}q_{0}$ found that Oaxac
 %	REFERENCES
 %----------------------------------------------------------------------------------------
 
-\section*{References}
-\begin{itemize}
-\item Wang H, Naghavi M, Allen C et al. Global, regional, and national life expectancy, all-cause mortality, and cause-specific mortality for 249 causes of death, 1980-2015: A systematic analysis for the global burden of disease study 2015. The Lancet 2016; 388: 1459–544
-\item Victora CG, Requejo JH, Barros AJD et al. Countdown to 2015: A decade of tracking progress for maternal, newborn, and child survival. The Lancet 2016; 387: 2049-59.
-\item Dwyer-Lindgren L, Kakungu F, Hangoma P et al. Estimation of district-level under-5 mortality in zambia using birth history data, 1980-2010. Spatial and Spatio-temporal Epidemiology 2014; 11: 89-107
-\end{itemize}
+% \section*{References}
+% \begin{itemize}
+% \item Wang H, Naghavi M, Allen C et al. Global, regional, and national life expectancy, all-cause mortality, and cause-specific mortality for 249 causes of death, 1980-2015: A systematic analysis for the global burden of disease study 2015. The Lancet 2016; 388: 1459–544
+% \item Victora CG, Requejo JH, Barros AJD et al. Countdown to 2015: A decade of tracking progress for maternal, newborn, and child survival. The Lancet 2016; 387: 2049-59.
+% \item Dwyer-Lindgren L, Kakungu F, Hangoma P et al. Estimation of district-level under-5 mortality in zambia using birth history data, 1980-2010. Spatial and Spatio-temporal Epidemiology 2014; 11: 89-107
+% \end{itemize}
 
 %----------------------------------------------------------------------------------------
 %	ACKNOWLEDGEMENTS

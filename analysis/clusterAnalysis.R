@@ -10,14 +10,15 @@ rm(list=ls())
 # What counties have had the greatest impact in the change
 
 
-pacman::p_load(INLA, TMB, raster, data.table, ggplot2, dplyr, dtplyr, ineq, 
-               INSP, surveillance, clusterPower, rvest, spdep, plotly, tidyr,
-               stringr, gridExtra, reldist, leaflet)
+pacman::p_load(INLA, TMB, raster, leaflet, data.table, ggplot2, dplyr, dtplyr, 
+               ineq, INSP, surveillance, clusterPower, rvest, spdep, plotly, 
+               tidyr, stringr, gridExtra, reldist)
 
 setwd("~/Documents/MXU5MR/analysis/outputs/")
 load("./uncertainty_draws.Rdata")
 load("../../IHMEanlaysis/adjust.Rdata")
 load("../../IHMEanlaysis/df_mxstate.RData")
+load("./regDelaySPDF.Rdata")
 U1state <- rename(U1state, YEAR=year)
 U5state <- rename(U5state, YEAR=year)
 DT <- fread("./model_phi_full.csv") %>% as.data.frame
@@ -101,7 +102,7 @@ mapDelta <- DF5q0_delta %>% left_join(tidymap, by="GEOID") %>%
           axis.ticks=element_blank(), axis.title=element_blank()) + 
     labs(title="") +
     scale_fill_discrete(guide=FALSE) +
-    labs(title="Clusters of Change: 2000-2015") +
+    labs(title="Clusters of Change: 2000-15") +
     theme(plot.title=element_text(size=24))
 
 
@@ -330,19 +331,6 @@ giniOaxDF <- data.frame(
     Year = unique(DFpop$YEAR)
 )
 
-giniOaxDF %>%
-    ggplot(aes(x=Year, y=meanGini, ymin=l_, ymax=h_)) + 
-    geom_line() + geom_ribbon(alpha=.3) +  
-    theme_classic() +
-    labs(x="Year", y="Gini Coefficient") +
-    theme(axis.title=element_text(size=20),
-          axis.text=element_text(size=16),
-          legend.text=element_text(size=16),
-          legend.title=element_text(size=20))
-    
-
-iggsave("../plots/ineq.png",
-       grid.arrange(pineqA, pineqR, ginip))
 
 Ddraws[,POPULATION:=DFpop$Population]
 Ddraws[,GEOID:=DT$GEOID]
@@ -374,15 +362,36 @@ df@data <- left_join(df@data, subset(DF5q0, YEAR == 2015)) %>%
                   summarize(Pop=round(sum(Population)))) %>%
     left_join(DFName)
 
-df@data %>% left_join(tidymap, by="GEOID") %>%
+
+pOaxGini <- giniOaxDF %>%
+    ggplot(aes(x=Year, y=meanGini, ymin=l_, ymax=h_)) + 
+    geom_line() + geom_ribbon(alpha=.3) +  
+    theme_classic() +
+    labs(x="Year", y="Gini Coefficient") +
+    ggtitle("Oaxaca Change in Gini Coefficient") +
+    theme(axis.title=element_text(size=20),
+          axis.text=element_text(size=16),
+          legend.text=element_text(size=16),
+          legend.title=element_text(size=20),
+          plot.title=element_text(size=24))
+
+pOaxMap <- df@data %>% 
+    left_join(tidymap, by="GEOID") %>%
+    filter(State == "Oaxaca") %>%
     ggplot(aes(x=long, y=lat)) +
     theme_classic() + 
     geom_polygon(aes(group=group, fill=fqz)) + 
     theme(axis.line = element_blank(),
-          legend.title=element_text("Test"), axis.text=element_blank(),
+          axis.text=element_blank(),
           axis.ticks=element_blank(), axis.title=element_blank(),
-          legend.justification=c(1,2.9),legend.position=c(.3, .45))+
+          legend.text=element_text(size=16),
+          legend.title=element_text(size=20),
+          plot.title=element_text(size=24)) +
+    ggtitle("Oaxaca: 2015 5q0") +
     scale_fill_distiller(palette="Spectral", name="5q0")
+
+ggsave("../plots/Oaxaca.png",
+       grid.arrange(pOaxMap, pOaxGini, nrow=1))
 
 DFCompDelta <- DFpop %>% as.data.frame %>%
     group_by(GEOID, YEAR) %>%
@@ -419,7 +428,7 @@ pDecomp <- with(DFCompDelta,
     ggplot(aes(x=Population, y=Contribution)) +
     geom_line() +
     labs(y="Contribution to Total Change",
-         title="Population Contribution to Percent Total Change") +
+         title="Population Contribution") +
     geom_abline(linetype=2) +
     theme_classic() +
     theme(plot.title=element_text(size=24)) +
@@ -427,6 +436,10 @@ pDecomp <- with(DFCompDelta,
           axis.text=element_text(size=16),
           legend.text=element_text(size=16),
           legend.title=element_text(size=20))
+
+
+ggsave("../plots/ineq.png",
+       grid.arrange(pineqA, pineqR, ginip, pDecomp))
 
 ggsave("../plots/contribDelta.png",
        pDecomp)
@@ -443,3 +456,20 @@ arrange(DF5q0_2015, fqz) %>% left_join(DFName) %>%
 arrange(DF5q0_2015, -fqz) %>% left_join(DFName) %>% 
     head(n=countN) %>% filter(State=="Oaxaca") %>% 
     nrow %>% `/`(countN)
+
+pRegDelayMap <- regDelaySPDF@data %>% 
+    mutate(GEOID=as.numeric(GEOID)) %>%
+    left_join(tidymap, by="GEOID") %>%
+    ggplot(aes(x=long, y=lat)) +
+    theme_classic() + 
+    geom_polygon(aes(group=group, fill=REG_DIFFN)) + 
+    theme(axis.line = element_blank(),
+          axis.text=element_blank(),
+          axis.ticks=element_blank(), axis.title=element_blank(),
+          legend.text=element_text(size=16),
+          legend.title=element_text(size=20),
+          plot.title=element_text(size=24)) +
+    ggtitle("Delay In Registration of Birth") +
+    scale_fill_distiller(palette="Spectral", name="Years")
+
+ggsave("../plots/regDelayMap.png", pRegDelayMap)
