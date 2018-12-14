@@ -7,26 +7,16 @@
 rm(list=ls())
 pacman::p_load(INSP, data.table, dplyr, surveillance, TMB, Matrix, INLA, rgeos)
 
-demog <- fread("~/Documents/MXU5MR/defunciones/outputs/demog.csv")
-demog[,GEOID:=sprintf("%05d", GEOID)]
+load("./Results/ihmeYearDemogDF.Rdata")
+
 
 geoid <- as.character(mx.sp.df@data$GEOID)
-age <- sort(unique(demog$EDAD))
-year <- sort(unique(demog$YEAR))
+age <- sort(unique(demogDF$EDAD))
+year <- sort(unique(demogDF$YEAR))
 
 # create data table with all combinations of geoid, age, and year
 DT <- as.data.table(expand.grid(GEOID=geoid, EDAD=age, YEAR=year))
-DT <- as.data.table(left_join(DT, demog))
-DT <- subset(DT, YEAR >= 2000)
-DT[,POPULATION2:=POPULATION]
-DT[is.na(POPULATION), POPULATION:=0]
-#DT[YEAR == 2015 & EDAD == 0, POPULATION:=0] # data is not complete for 2015 births
-DT[is.na(POPULATION2), POPULATION2:=0]
-DT[is.na(DEATHS), DEATHS:=0]
-nrow(DT[DEATHS > POPULATION,])
-#summary(DT$DEATHS > DT$POPULATION2)
-
-#DT[,list(D=sum(DEATHS)), by=YEAR]
+DT <- as.data.table(left_join(DT, demogDF))
 
 ### build spde
 INLA:::inla.dynload.workaround()
@@ -38,7 +28,7 @@ N_l <- nrow(mx.sp.df@data)
 all(mesh$idx$loc[1:(N_l -1)] + 1 == mesh$idx$loc[2:N_l])
 
 ### Build model structure
-setwd("~/Documents/MXU5MR/analysis/")
+setwd("./3. Model/")
 
 model <- "u5mr"
 if (file.exists(paste0(model, ".so"))) file.remove(paste0(model, ".so"))
@@ -93,5 +83,5 @@ DT[,Ratem1pop1:=c(mods$Ratem1pop1$RR)]
 DT[,Ratem1pop2:=c(mods$Ratem1pop1$RR)]
 DT[,Ratem1:=c(mods$Ratem1pop1$RR)]
 
-save(mods, file="~/Documents/MXU5MR/analysis/outputs/model_covs_full.Rdata")
-fwrite(DT, "~/Documents/MXU5MR/analysis/outputs/model_phi_full.csv")
+save(mods, file="../Results/model_covs_full.Rdata")
+save(DT, file="../Results/model_phi_full.Rdata")

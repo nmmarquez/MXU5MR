@@ -24,7 +24,7 @@ births[ANO_REG < 100, ANO_REG:= ANO_REG + 1900]
 births[ANO_NAC < 100, ANO_NAC:= ANO_NAC + 1900]
 
 # We only want the data where the births are between 1995 and 2015
-births <- subset(births, ANO_NAC <= 2015 & ANO_NAC >= 1995)
+births <- subset(births, ANO_NAC <= 2015 & ANO_NAC >= 1996)
 
 # Properly Format Locations
 births[,ENT_REGIS:=sprintf("%02d", as.integer(ENT_REGIS))]

@@ -11,8 +11,8 @@ my <- sapply(seq(1990, 2005, 5), function(x)
 urls <- c(sy, my)
 
 tempfiles <- sapply(1:length(urls), function(x) tempfile())
-extr_dir <- "~/Downloads/tmp"
-save_dir <- "~/Documents/MXU5MR/defunciones/data/inegi/"
+extr_dir <- tempdir()
+save_dir <- "./Data/deaths/"
 
 mapply(download.file, urls, tempfiles)
 
