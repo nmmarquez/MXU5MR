@@ -10,7 +10,7 @@ output:
 # Decomposing Geographic Changes in Mexico's Child Mortality
 
 ## Background  
-In this analysis we unpack some of the interesting results from examining the change in under 5 mortality by examining$~_0q_5$, the probability of death before age 5, by municipality within Mexico. n 2015 at the end of the tracking period for the Millennium Development Goals (MDGs) the report Countdown to 2015, released by the World Health Organization, stated that, of the 75 priority countries followed by an ongoing analysis of child mortality monitoring, Mexico was one of twenty five countries that successfully achieved the goal of reducing under 5 mortality by two thirds, reducing their national under 5 mortality rate from 48 to 16 deaths per 1000 live births. Mexico's 2456 municipalities contain diverse set of populations and by examining how municipalities contributed to the change in national change level of child mortality, we can get a better understanding of how subpopulations differentially experience child mortality events and how this has changed over time.
+In this debrief we unpack some of the interesting results from examining the change in under 5 mortality in the forthcoming paper, Under 5 Mortality Estimates For Mexico’s Municipalities: 2000-2015. This debrief assesses the variation of child health outcomes experienced in the years 2000 to 2015 by examining$~_5q_0$, the probability of death before age 5, at the municipality level within Mexico. In 2016, at the end of the tracking period for the Millennium Development Goals (MDGs), the World Health Organization released a report stating that, of the 75 priority countries followed by an ongoing analysis of child mortality monitoring, Mexico was one of twenty five countries that successfully achieved the goal of reducing under 5 mortality by two thirds. During the period between 1990 and 2015 Mexico reduced their national under 5 mortality rate from 48 to 16 deaths per 1000 live births. Mexico's 2456 municipalities contain diverse populations and by examining how municipalities contributed to the change in national level child mortality, we can gain a better understanding of how subpopulations differentially experience child mortality events and how this has changed over time. This is especially important in the context of the Sustainable Development Goals where the focus has been shifted to the reduction of national levels of inequality of various social and economic measures, rather than absolute reduction at the national level. 
 
 ## Data
 
@@ -31,21 +31,21 @@ D_{l,a,t} \sim Poisson(\lambda_{l, a, t} \times P_{l,a,t}) \\
 \lambda_{l, a, t} = exp(\beta_a + \phi_{l,a,t}) \\
 \phi \sim MVN(0, Q) \\
 Q = Q^t \otimes Q^a \otimes Q^l \\
-Q^a \sim AR_1(\rho^a) \\
-Q^t \sim AR_1(\rho^t) \\
-Q^l \sim LCAR(\rho^l, \sigma)
+Q^a \sim \text{AR}_1(\rho^a) \\
+Q^t \sim \text{AR}_1(\rho^t) \\
+Q^l \sim \text{LCAR}(\rho^l, \sigma)
 $$
 
-Where $\phi$ is a set of random effects that describe the latent age-spatiotemporal correlations that exist in the underlying mortality rates. These random effects have the effect of smoothing data such that outliers and improbably low or high observed rates of age specific mortality in a given year for a particular geography due to small sample size are adjusted base on the correlations observed in the dataset examined together. The model produces a set of parameters $\lambda_{l, a, t}$ which are age specific mortality rates for, for specific municipality-year which then can be converted to$~_0q_5$. The benefit to this approach is that it allows us to take into account the correlated structure of the mortality events that we observe as well as leverage the uncertainty in our estimates that are attributable to variable sample sizes observed across different municipalities and years.
+Where $\phi$ is a set of random effects that describe the latent age-spatiotemporal correlations that exist in the underlying mortality rates. These random effects have the effect of smoothing data such that outliers and improbably low or high observed rates of age specific mortality in a given year for a particular geography due to small sample size are adjusted base on the correlations observed in the dataset as a whole. The model produces a set of parameters $\lambda_{l, a, t}$ which are age specific mortality rates, for specific municipality-year which then can be converted to$~_5q_0$ using traditional demographic methods. The benefit to this approach is that it allows us to take into account the correlated structure of the mortality events that we observe as well as leverage the uncertainty in our estimates that are attributable to variable sample sizes across different municipalities and years.
 
-In order to remain consistent with current demographic estimates of mortality, we raked our results such that they matched the GBD 2016 state level estimates of child mortality in Mexico.
+In order to remain consistent with current demographic estimates of mortality, we raked our results such that they matched the Global Burden of Disease(GBD) 2016 state level estimates of child mortality in Mexico, though, sensibility checks of aggregated data had estimates produced in this analysis closeley mathcing the GBD results.
 
 ## Results
 
 ```{R loads, echo=FALSE, warning=FALSE, message=FALSE}
 pacman::p_load(INLA, TMB, raster, data.table, ggplot2, dplyr, dtplyr, ineq,
                INSP, surveillance, clusterPower, rvest, spdep, plotly, tidyr,
-               stringr, leaflet, latex2exp)
+               stringr, leaflet, latex2exp, reldist)
 
 setwd("~/Documents/MXU5MR/analysis/outputs/")
 load("~/Documents/MXU5MR/analysis/outputs/uncertainty_draws.Rdata")
@@ -90,7 +90,8 @@ tidymap <- fortify(mx.sp.df) %>% mutate(id=as.numeric(id)) %>%
     mutate(GEOID=as.numeric(GEOID))
 ```
 
-Before municipality level results can be examined we address the variation in the data quality that exists from the Mexico Vital Registration Data from INEGI. For the years between 1995 and 2015 information on the delay of registration from time of birth was collected for each birth record and averaged across the time series for each municipality. Average registration time for municipalities ranges from less than one month to over three years. These results show significant geospataial autocorrelation, as measured by a Morans I test, with significant clusters of delayed reporting municipalities present in Chihuahua, Guerrero, and Chiapas. These delays would could result in biases in both the denominator and the numerator when trying to estimate age annual specific mortality.
+Before municipality level results can be examined we address the variation in the data quality that exists from the Mexico Vital Registration Data from INEGI. For the years between 1995 and 2015 information on the delay of registration from time of birth was collected for each birth record and averaged across the time series for each municipality. Average registration time for municipalities ranges from less than one month to over three years. These results show significant geospataial autocorrelation, as measured by a Morans I test, with significant clusters of delayed reporting municipalities present in Chihuahua, Guerrero, and Chiapas. These delays would could result in biases in both the denominator and the numerator when trying to estimate annual age specific mortality, though, the potential effects are difficult to quantify.
+
 
 ```{R regDelay, echo=FALSE, warning=FALSE, message=FALSE}
 col <- "REG_DIFFN"
@@ -135,7 +136,7 @@ natdraws[,h_:=apply(as.matrix(subset(natdraws, select=cols)), 1, quantile, probs
 
 pNat <- ggplot(natdraws, aes(x=YEAR, y=m_)) + geom_line() +
     geom_ribbon(aes(x=YEAR, ymin=l_, ymax=h_), alpha=.25) +
-    labs(x="Year", y="5Q0", title="National Estimates of 5Q0") +
+    labs(x="Year", y="5q0", title="National Estimates of 5q0") +
     theme(plot.title = element_text(hjust = 0.5)) +
     theme_classic()
 
@@ -173,7 +174,7 @@ phist <- data.frame(Value=c(hist2000, hist2015)) %>%
 phist
 ```
 
-Another way to examine the decrease in the variation of child mortality across municipalities in Mexico is to assess changes in measures of inequality over time. For example we can take the .99 percentile of$~_5q_0$ and subtract from it the .01 percentile of$~_5q_0$ from a given year in order to get a measure of absolute inequality. Alternatively we may take the .99 percentile of$~_5q_0$ and divide it by the .01 percentile of$~_5q_0$ for any given year in order to get a measure of relative inequality. In addition, because our analysis not only computes the mean estimates of mortality rates but also computes uncertainty for child mortality rates, and also for$~_5q_0$, we can also calculate uncertainty related to ur estimates of absolute and relative inequality as well. Because we have a narrowing distribution of$~_5q_0$ in Mexico between the years 2000 and 2015 we see that both measures of absolute and relative inequality drop significantly between the two years.
+Another way to examine the decrease in the variation of child mortality across municipalities in Mexico is to assess changes in measures of inequality over time. For example we can take the .99 percentile of$~_5q_0$ and subtract from it the .01 percentile of$~_5q_0$ from a given year in order to get a measure of absolute inequality. Alternatively we may take the .99 percentile of$~_5q_0$ and divide it by the .01 percentile of$~_5q_0$ for any given year in order to get a measure of relative inequality. In addition, because our analysis not only computes the mean estimates of mortality rates but also computes uncertainty for child mortality rates, and also for$~_5q_0$, we can also calculate uncertainty related to ur estimates of absolute and relative inequality as well. Because we have a narrowing distribution of$~_5q_0$ in Mexico between the years 2000 and 2015 we see that both measures of absolute and relative inequality drop significantly between the two years. For comparison we also include inequality as measured by the Gini coefficient, another measure of relative inequality.
 
 ```{R inequality, echo=FALSE, warning=FALSE, message=FALSE}
 hivals <- apply(q0array, c(2,3), quantile, .99)
@@ -191,21 +192,48 @@ DTineq <- data.table(year=2000:2015, relineq=apply(relineq, 1, mean),
 
 pineqR <- ggplot(DTineq, aes(x=year, y=relineq)) + geom_line() +
     geom_ribbon(aes(x=year, ymin=relineqlow, ymax=relineqhi), alpha=.25) +
-    labs(x="Year", y="Relative Inequality", title="5Q0 Inequality") +
+    labs(x="Year", y="Relative Inequality") +
     theme(plot.title = element_text(hjust = 0.5)) +
     theme_classic()
 
 pineqA <- ggplot(DTineq, aes(x=year, y=absineq)) + geom_line() +
     geom_ribbon(aes(x=year, ymin=absineqlow, ymax=absineqhi), alpha=.25) +
-    labs(x="Year", y="Absolute Inequality", title="5Q0 Inequality") +
+    labs(x="Year", y="Absolute Inequality", title="5q0 Inequality") +
     theme(plot.title = element_text(hjust = 0.5)) +
     theme_classic()
 
+DFpoptot <- DFpop %>%
+    group_by(GEOID, YEAR) %>%
+    summarize(Population=sum(Population)) %>%
+    ungroup %>%
+    right_join(unique(select(DFpop, GEOID, YEAR)))
+
+popArray <- array(DFpoptot$Population, dim=dim(q0array)[1:2])
+
+giniArr <- sapply(
+    1:dim(q0array)[2], function(i) sapply(1:1000, function(j){
+        gini(q0array[,i,j], popArray[,i])
+        }))
+
+giniDF <- data.frame(
+    meanGini=apply(giniArr, 2, mean),
+    l_=apply(giniArr, 2, quantile, probs=.025),
+    h_=apply(giniArr, 2, quantile, probs=.975),
+    Year = unique(DFpop$YEAR)
+)
+
+ginip <- giniDF %>%
+    ggplot(aes(x=Year, y=meanGini, ymin=l_, ymax=h_)) +
+    geom_line() + geom_ribbon(alpha=.3) +  
+    theme_classic() +
+    labs(x="Year", y="Gini Coefficient")
+
 ggplotly(pineqA)
 ggplotly(pineqR)
+ggplotly(ginip)
 ```
 
-For both the metrics of absolute and relative inequality we can see that there has been a stagnation in reduction between the years 2010 and 2015 despite the national values of$~_5q_0$ continuing to decline. Admittedly, our measure of inequality is not very robust to the entirety of the composition of the distribution for a given year, however, if we inspect the density of$~_5q_0$ for these two years we can see that despite having a shift of declining mortality we still observe a positive skew to the distribution with a left tail.
+For both the metrics of absolute and relative inequality we can see that there has been a stagnation in reduction between the years 2010 and 2015 despite the national values of$~_5q_0$ continuing to decline. Indeed, if we inspect the density of$~_5q_0$ for these two years we can see that despite having a shift of declining mortality we still observe a positive skew to the distribution with a left tail.
 
 ```{R histochnage2, echo=FALSE, warning=FALSE, message=FALSE}
 DFhist2 <- DFpop %>%
@@ -258,7 +286,7 @@ map1 <- leaflet() %>% addProviderTiles("CartoDB.Positron") %>%
     addPolygons(data = df, fillColor = ~pal(data), color = "#b2aeae",
         weight = 0.3, fillOpacity = 0.7, smoothFactor = 0.2,
         popup = popup) %>% addLegend("bottomleft", pal = pal,
-    values = df$data, title ="Mexico 5q0(2015)", opacity = 1)
+    values = df$data, title ="Mexico 5q0<br>(2015)", opacity = 1)
 
 corReal <- q0array[,c(1,16),] %>%
     apply(3, function(x) cor(x[,1], x[,2])) %>%
@@ -317,7 +345,7 @@ pDecomp <- with(DFCompDelta,
      data.frame(Population=cumsum(Population_2015),
                 Contribution=cumsum(totI) /sum(totI))) %>%
     ggplot(aes(x=Population, y=Contribution)) +
-    geom_line() +
+    geom_point(size=.2) +
     geom_abline(linetype=2) +
     theme_classic()
 
@@ -366,6 +394,7 @@ DdrawsHyp <- filter(Ddraws, YEAR==2015) %>%
     left_join(subset(influential2015, select=c(GEOID, Dratio))) %>%
     mutate(Dratio=ifelse(is.na(Dratio), 1, Dratio)) %>%
     as.data.table()
+
 cols <- names(DdrawsHyp)[grepl("sample", names(DdrawsHyp))]
 DdrawsHyp[ , (cols) := lapply(.SD, `*`, Dratio), .SDcols = cols]
 natdrawsHyp <- DdrawsHyp[,lapply(.SD, sum), by=list(EDAD, YEAR)]
@@ -450,7 +479,7 @@ pPopDecomp <- DFCompDelta %>%
      mutate(Population=cumsum(Population_2015),
             Contribution=cumsum(residI /sum(residI))) %>%
     ggplot(aes(x=Population, y=Contribution)) +
-    geom_line() +
+    geom_point(size=.2) +
     geom_abline(linetype=2) +
     theme_classic()
 
@@ -536,9 +565,7 @@ pDelta <- DFCompDelta %>%
 ggplotly(pDelta, tooltip="text")
 ```
 
-We can also focus are view on the bottom and top 5 municipalities ranked by their levels of$~_5q_0$ in 2015, regardless of their contribution to national$~_5q_0$. By hovering over the lines we can see that the relative under 5 population size of these municipalities is lower than they other municipalities that we have viewed which contribute more heavily to the national average. You can also see that that the state of Oaxaca, the state with the most municipalities in Mexico, has representation in both the top 5 lowest and highest performing municipality level$~_5q_0$ in Mexico as of 2015. Below the time series is a map of just Oaxaca's$~_5q_0$ estimates. If you wish to view a full set of results, time series plots and maps for all years at national, state and municipality levels, they may be viewed at the following link.
-
-https://nmmarquez.twilightparadox.com/u5mr_results/
+We can also focus are view on the bottom and top 5 municipalities ranked by their levels of$~_5q_0$ in 2015, regardless of their contribution to national$~_5q_0$. By hovering over the lines we can see that the relative under 5 population size of these municipalities is lower than they other municipalities that we have viewed which contribute more heavily to the national average. You can also see that that the state of Oaxaca, the state with the most municipalities in Mexico, has representation in both the top 5 lowest and highest performing municipality level$~_5q_0$ in Mexico as of 2015. Below the time series is a map of just Oaxaca's$~_5q_0$ estimates for 2015.
 
 ```{R TSHiLo, echo=FALSE, warning=FALSE, message=FALSE}
 pHiLo <- DFCompDelta %>%
@@ -598,5 +625,36 @@ mapOax <- leaflet() %>% addProviderTiles("CartoDB.Positron") %>%
 
 mapOax
 ```
+
+It is interseting to note that an almost equal level of municipality variance is seen in Oaxaca comapred to the national level. In fact if we examine inequality metrics for just Oaxaca, we find that there has been no significant change in the levels of relative inequality, as measured by the Gini coefficient, which is shown in the time series plot below. Looking at state level measures of inequality is especially important in order to determine the potential variable impact that the state level ministries of health have on their population when state level health authorities exist such as in Mexico.
+
+```{R oaxIneq, echo=FALSE, warning=FALSE, message=FALSE}
+## Oaxaca Inequality
+oaxIndx <- which(DFName$State == "Oaxaca")
+giniArrOax <- sapply(
+    1:dim(q0array)[2], function(i) sapply(1:1000, function(j){
+        gini(q0array[oaxIndx,i,j], popArray[oaxIndx,i])
+    }))
+
+giniOaxDF <- data.frame(
+    meanGini=apply(giniArrOax, 2, mean),
+    l_=apply(giniArrOax, 2, quantile, probs=.025),
+    h_=apply(giniArrOax, 2, quantile, probs=.975),
+    Year = unique(DFpop$YEAR)
+)
+
+pOaxGini <- giniOaxDF %>%
+    ggplot(aes(x=Year, y=meanGini, ymin=l_, ymax=h_)) +
+    geom_line() + geom_ribbon(alpha=.3) +  
+    theme_classic() +
+    labs(x="Year", y="Gini Coefficient") +
+    ggtitle("Oaxaca Change in Gini")
+
+ggplotly(pOaxGini)
+```
+
+If you wish to view a full set of results, time series plots and maps for all years at national, state and municipality levels, they may be viewed at the following link.
+
+https://nmmarquez.twilightparadox.com/u5mr_results/  
 
 ## Associations

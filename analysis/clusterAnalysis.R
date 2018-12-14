@@ -214,38 +214,38 @@ tots <- sum(DFCompDelta$residI) + sum(DFCompDelta$grossI)
 sum(DFCompDelta$residI) / tots
 sum(DFCompDelta$grossI) / tots
 
-DFCompDelta %>% filter(residI>0) %>% arrange(-totI) %>% head(n=20)
-hiImpact <- DFCompDelta$GEOID[1:20][DFCompDelta$GEOID[1:20] %in% 
-          (DF5q0_delta %>% filter(Cluster=="Great Change"))$GEOID][1]
-iCluster <- MEXlistw$neighbours[[which(mx.sp.df$GEOID == hiImpact)]] %>%
-    mx.sp.df$GEOID[.] %>% as.numeric %>% c(hiImpact)
-
-with(DFCompDelta, data.frame(Population=cumsum(Population_2015),
-                             Contribution=cumsum(totI) /sum(totI))) %>%
-    ggplot(aes(x=Population, y=Contribution)) + 
-    geom_line() + 
-    geom_abline(linetype=2) + 
-    theme_classic()
-
-DFCompDelta %>%
-    ggplot(aes(x=fqz_2000, y=fqz_2015, color=State)) + geom_point() +
-    lims(x=c(0, .126), y=c(0, .126))
-
-DFCompDelta %>%
-    mutate(fqzScale_2000=scale(fqz_2000), fqzScale_2015=scale(fqz_2015)) %>%
-    ggplot(aes(x=fqzScale_2000, y=fqzScale_2015, color=State)) + 
-    geom_point()
-
-DFCompDelta %>%
-    mutate(fqzScale_2000=scale(fqz_2000), fqzScale_2015=scale(fqz_2015)) %>%
-    with(cor(fqzScale_2000, fqzScale_2015))
-
-DFCompDelta %>%
-    with(cor(fqz_2000, fqz_2015))
-
-corDist <- apply(q0array[,c(1,16),], c(2,3), scale) %>% 
-    apply(3, function(x) cor(x[,1], x[,2]))
-summary(corDist)
+# DFCompDelta %>% filter(residI>0) %>% arrange(-totI) %>% head(n=20)
+# hiImpact <- DFCompDelta$GEOID[1:20][DFCompDelta$GEOID[1:20] %in% 
+#           (DF5q0_delta %>% filter(Cluster=="Great Change"))$GEOID][1]
+# hiCluster <- MEXlistw$neighbours[[which(mx.sp.df$GEOID == hiImpact)]] %>%
+#     mx.sp.df$GEOID[.] %>% as.numeric %>% c(hiImpact)
+# 
+# with(DFCompDelta, data.frame(Population=cumsum(Population_2015),
+#                              Contribution=cumsum(totI) /sum(totI))) %>%
+#     ggplot(aes(x=Population, y=Contribution)) + 
+#     geom_line() + 
+#     geom_abline(linetype=2) + 
+#     theme_classic()
+# 
+# DFCompDelta %>%
+#     ggplot(aes(x=fqz_2000, y=fqz_2015, color=State)) + geom_point() +
+#     lims(x=c(0, .126), y=c(0, .126))
+# 
+# DFCompDelta %>%
+#     mutate(fqzScale_2000=scale(fqz_2000), fqzScale_2015=scale(fqz_2015)) %>%
+#     ggplot(aes(x=fqzScale_2000, y=fqzScale_2015, color=State)) + 
+#     geom_point()
+# 
+# DFCompDelta %>%
+#     mutate(fqzScale_2000=scale(fqz_2000), fqzScale_2015=scale(fqz_2015)) %>%
+#     with(cor(fqzScale_2000, fqzScale_2015))
+# 
+# DFCompDelta %>%
+#     with(cor(fqz_2000, fqz_2015))
+# 
+# corDist <- apply(q0array[,c(1,16),], c(2,3), scale) %>% 
+#     apply(3, function(x) cor(x[,1], x[,2]))
+# summary(corDist)
 
 corReal <- q0array[,c(1,16),] %>%
     apply(3, function(x) cor(x[,1], x[,2]))
@@ -308,7 +308,7 @@ pineqR <- ggplot(DTineq, aes(x=year, y=relineq)) + geom_line() +
 
 pineqA <- ggplot(DTineq, aes(x=year, y=absineq)) + geom_line() +
     geom_ribbon(aes(x=year, ymin=absineqlow, ymax=absineqhi), alpha=.25) +
-    labs(x="", y="Absolute Inequality", title="5Q0 Inequality") +
+    labs(x="", y="Absolute Inequality", title="5q0 Inequality") +
     theme(plot.title = element_text(hjust = 0.5)) +
     theme_classic() +
     theme(plot.title=element_text(size=24)) +
@@ -347,7 +347,7 @@ natdraws[,h_:=apply(as.matrix(subset(natdraws, select=cols)), 1, quantile, probs
 
 pNat <- ggplot(natdraws, aes(x=YEAR, y=m_)) + geom_line() +
     geom_ribbon(aes(x=YEAR, ymin=l_, ymax=h_), alpha=.25) +
-    labs(x="Year", y="5Q0", title="National Estimates of 5Q0") +
+    labs(x="Year", y="5q0", title="National Estimates of 5q0") +
     theme(plot.title = element_text(hjust = 0.5)) +
     theme_classic()
 pNat
@@ -368,7 +368,7 @@ pOaxGini <- giniOaxDF %>%
     geom_line() + geom_ribbon(alpha=.3) +  
     theme_classic() +
     labs(x="Year", y="Gini Coefficient") +
-    ggtitle("Oaxaca Change in Gini Coefficient") +
+    ggtitle("Oaxaca Change in Gini") +
     theme(axis.title=element_text(size=20),
           axis.text=element_text(size=16),
           legend.text=element_text(size=16),

@@ -49,7 +49,7 @@
 
 \begin{minipage}[b]{0.67\linewidth}
 \veryHuge \color{Crimson} \textbf{Under 5 Mortality Estimates For Mexico's ~~~~~~Municipalities: 2000-2015} \color{Black}\\ % Title
-\Huge\textit{Estimating Small Area Changes in Child Mortality over Time in Mexico}\\[2cm] % Subtitle
+\Huge\textit{Estimating Small Area Changes in Child Mortality Over Time in Mexico}\\[2cm] % Subtitle
 \huge \textbf{Neal Marquez - Sociology}\\[0.5cm] % Author(s)
 \huge University of Washington\\[0.4cm] % University/organization
 \Large nmarquez@uw.edu\\
@@ -113,7 +113,7 @@ Mexico has had dramatic declines in under 5 mortality from 1990 to 2015 and is o
 
 \section*{Materials and Methods}
 
-De-identified person level data was extracted from INEGI and SINAC vital registration reports for the years 2000 to 2015 for birth records. Of the 43594696 birth records that were extracted 99.65\% had a properly identified household location of parents that was used as the geolocation for this analysis, placing each record in one of the 2456 municipalities within Mexico. The records that did not have a municipality associated with them were approximately evenly distributed across states and were discarded from the analysis. Death registration data was extracted from person level de-identified INEGI reports where municipality of residence, year of occurrence, and age of individual given by single year was used provided that information existed for the death record. Of the 592274 deaths that were reported as under the age of 5, 99.72\% had values for year, age, and municipality that were valid. Since data was not linked by person and single year populations by single year age and municipality were not available in other data sources, populations were estimated by taking the births of individuals for a particular municipality age and moving them one year forward in age as calendar year progressed, while also subtracting the deaths for that population. The formula is as follows where $P$ is population number, $D$ is death number, $a$ is a single year age, $t$ is a single year time period, and $l$ is a municipality.
+De-identified person level data was extracted from INEGI and SINAC vital registration reports for the years 2000 to 2015 for birth records. Of the 43,594,696 birth records that were extracted 99.65\% had a properly identified household location of parents that was used as the geolocation for this analysis, placing each record in one of the 2456 municipalities within Mexico. The records that did not have a municipality associated with them were approximately evenly distributed across states and were discarded from the analysis. Death registration data was extracted from person level de-identified INEGI reports where municipality of residence, year of occurrence, and age of individual given by single year was used provided that information existed for the death record. Of the 592274 deaths that were reported as under the age of 5, 99.72\% had values for year, age, and municipality that were valid. Since data was not linked by person and single year populations by single year age and municipality were not available in other data sources, populations were estimated by taking the births of individuals for a particular municipality age and moving them one year forward in age as calendar year progressed, while also subtracting the deaths for that population. The formula is as follows where $P$ is population number, $D$ is death number, $a$ is a single year age, $t$ is a single year time period, and $l$ is a municipality.
 
 $$
 P_{l,a,t} = P_{l,a-1,t-1} - D_{l,a-1,t-1}
@@ -145,7 +145,7 @@ Decomposing changes to the national level$~_{5}q_{0}$ into compositional changes
 %
 \begin{center}\vspace{1cm}
 \includegraphics[width=.7\columnwidth]{/home/nyannyan/Documents/MXU5MR/analysis/plots/ineq.png}
-\captionof{figure}{\color{Green} Changes in Inequality & Contribution}
+\captionof{figure}{\color{Green} Changes in Inequality \& Contribution}
 \end{center}\vspace{1cm}
 %
 
@@ -163,7 +163,7 @@ Decomposing changes to the national level$~_{5}q_{0}$ into compositional changes
 \end{center}\vspace{1cm}
 %
 
-Examing the lowest and highest 30 municipalities of$~_{5}q_{0}$ found that Oaxaca, which contains around 25\% of the countries municipalities, makes up 43\% of the highest observed$~_{5}q_{0}$ municipalities as well as 53\% of the lowest observed$~_{5}q_{0}$ municipalities. Looking at just Oaxaca, the state level inequalities have not significantly changed over the observed time period. Other low performers in terms of relative level of 2015$~_{5}q_{0}$ come from the states of Chiapas, Guerrero, and Chihuahua while high performing municipalities are located in Tamaulipas, Yucatan, and Michoacan de Ocampo.
+Examining the lowest and highest 30 municipalities of$~_{5}q_{0}$ found that Oaxaca, which contains around 25\% of the country's municipalities, makes up 43\% of the highest observed$~_{5}q_{0}$ municipalities as well as 53\% of the lowest observed$~_{5}q_{0}$ municipalities. Looking at just Oaxaca, the state level inequalities have not significantly changed over the observed time period. Other low performers in terms of relative level of 2015$~_{5}q_{0}$ come from the states of Chiapas, Guerrero, and Chihuahua while high performing municipalities are located in Tamaulipas, Yucatan, and Michoacan de Ocampo.
 %----------------------------------------------------------------------------------------
 %	CONCLUSIONS
 %----------------------------------------------------------------------------------------
